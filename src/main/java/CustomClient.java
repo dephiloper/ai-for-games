@@ -8,10 +8,14 @@ import lenz.htw.sawhian.net.NetworkClient;
 
 public class CustomClient {
     public static void main(String[] args) throws IOException {
+        /*
         new Thread(() -> { runRandomClient("Client 0", "test1.png"); }).start();
         new Thread(() -> { runRandomClient("Client 1", "test1.png"); }).start();
         new Thread(() -> { runRandomClient("Client 2", "test1.png"); }).start();
         new Thread(() -> { runRandomClient("Client 3", "test1.png"); }).start();
+         */
+        GameState state = new GameState();
+        state.test(100);
     }
 
     private static void runRandomClient(final String clientName, final String imagePath) {
