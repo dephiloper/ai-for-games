@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class GameState {
     /*
@@ -13,25 +14,36 @@ public class GameState {
      * The second player has the ground line (0, 0) to (0, 6).
      * The following players change clockwise.
      */
-    public static final byte NUM_PLAYERS = 4;
-    public static final byte MAX_NEXT_MOVES = 13;
+    private static final byte NUM_PLAYERS = 4;
+    private static final byte MAX_NEXT_MOVES = 13;
 
-    final static private byte[] PLAYER_DIRECTIONS = new byte[] {Configurations.FIELD_SIZE, -1, -Configurations.FIELD_SIZE, 1};
+    final static private byte[] PLAYER_DIRECTIONS = new byte[] {Configurations.FIELD_SIZE, 1, -Configurations.FIELD_SIZE, -1};
 
-    private long[] configurations = new long[NUM_PLAYERS];
+    private long[] configurations;
 
-    void test(long configuration) {
-        for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
-            System.out.println(String.format("Baseline for player %d", playerIndex));
-            System.out.println(configurationToString(Configurations.BASE_LINES[playerIndex]));
+    static void test() {
+        Random randomGenerator = new Random();
+
+        GameState state = GameState.newEmptyGameState();
+
+        byte playerNumber = 0;
+
+        for (int i = 0; i < 50; i++) {
+            List<GameState> states = state.getNextPossibleStates(playerNumber);
+            int index = randomGenerator.nextInt(states.size());
+            state = states.get(index);
+            System.out.println(String.format("player %d moves:", playerNumber));
+            System.out.println(state.toString());
+            playerNumber = (byte)((playerNumber + 1) % NUM_PLAYERS);
         }
+
     }
 
     private GameState(long[] configurations) {
         this.configurations = configurations;
     }
 
-    public static GameState newEmptyGameState() {
+    private static GameState newEmptyGameState() {
         return new GameState(new long[]{
                 Configurations.TOKENS_TO_PLAY_BITMASK,
                 Configurations.TOKENS_TO_PLAY_BITMASK,
@@ -83,7 +95,7 @@ public class GameState {
             }
         }
 
-        final byte numTokensToPlay = Configurations.getNumTokensToPlay(playerConfiguration);
+        final byte numTokensToPlay = Configurations.getNumTokensToPlay(configurations[playerNumber]);
         if (numTokensToPlay > 0) {
             long freeBaseLine = getBaseLine(playerNumber) & ~generalConfiguration;
             nextPossibleMoves |= freeBaseLine;
@@ -92,14 +104,23 @@ public class GameState {
         return nextPossibleMoves;
     }
 
-    public List<GameState> getNextPossibleStates(byte playerNumber) {
+    private List<GameState> getNextPossibleStates(byte playerNumber) {
         final long nextPossibleMoves = getNextPossibleMoves(playerNumber);
         final long playerConfiguration = getPlayerConfiguration(playerNumber);
 
         final List<GameState> nextPossibleStates = new ArrayList<>(MAX_NEXT_MOVES);
         for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
             final long targetPosition = getTargetPosition(playerNumber, move);
-            final long targetPlayerState = (playerConfiguration & ~move) | targetPosition;
+            long targetPlayerState = (playerConfiguration & ~move) | targetPosition;
+
+            byte numTokensToPlay = Configurations.getNumTokensToPlay(configurations[playerNumber]);
+
+            // if is new token
+            if (move == targetPosition) {
+                targetPlayerState = Configurations.setNumTokensToPlay(targetPlayerState, (byte)(numTokensToPlay-1));
+            } else {
+                targetPlayerState = Configurations.setNumTokensToPlay(targetPlayerState, numTokensToPlay);
+            }
 
             final long[] target_configurations = configurations.clone();
             target_configurations[playerNumber] = targetPlayerState;
@@ -208,21 +229,37 @@ public class GameState {
         // Return whether nextNextPosition is free
         long nextNextPosition = nextPositionInDirection(nextPosition, playerDirection);
         return (nextNextPosition & generalConfiguration) == 0;
-
     }
 
-    public static String configurationToString(long configuration) {
+    public String toString() {
         StringBuilder result = new StringBuilder(51);
+        final long generalConfiguration = getGeneralConfiguration();
+
         for (int y = Configurations.FIELD_SIZE-1; y >= 0; y--) {
             for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
-                if ((configuration & (1L << (x + y* Configurations.FIELD_SIZE))) != 0) {
-                    result.append('1');
-                } else {
-                    result.append('0');
+                final long position = (1L << (x + y * Configurations.FIELD_SIZE));
+                if ((position & generalConfiguration) == 0) {
+                    result.append('~');
+                    continue;
+                }
+                for (byte playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
+                    if ((configurations[playerNumber] & position) != 0) {
+                        result.append(playerNumberToChar(playerNumber));
+                    }
                 }
             }
             result.append('\n');
         }
         return result.toString();
+    }
+
+    private static char playerNumberToChar(byte playerNumber) {
+        switch (playerNumber) {
+            case 0: return '0';
+            case 1: return '1';
+            case 2: return '2';
+            case 3: return '3';
+            default: throw new RuntimeException();
+        }
     }
 }

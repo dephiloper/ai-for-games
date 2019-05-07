@@ -14,8 +14,7 @@ public class CustomClient {
         new Thread(() -> { runRandomClient("Client 2", "test1.png"); }).start();
         new Thread(() -> { runRandomClient("Client 3", "test1.png"); }).start();
          */
-        GameState state = new GameState();
-        state.test(100);
+        GameState.test();
     }
 
     private static void runRandomClient(final String clientName, final String imagePath) {
