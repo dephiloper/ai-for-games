@@ -38,8 +38,8 @@ public class GameState {
         for (int i = 0; i < 50; i++) {
             List<GameState> states = state.getNextPossibleStates();
             int index = randomGenerator.nextInt(states.size());
-            state = states.get(index);
             System.out.println(String.format("player %d moves:", state.getCurrentPlayer()));
+            state = states.get(index);
             System.out.println(state.toString());
         }
     }
@@ -47,6 +47,11 @@ public class GameState {
     private GameState(long[] configurations) {
         this.configurations = configurations;
         this.currentPlayer = 0;
+    }
+
+    private GameState(long[] configurations, int currentPlayer) {
+        this.configurations = configurations;
+        this.currentPlayer = currentPlayer;
     }
 
     private static GameState newEmptyGameState() {
@@ -122,33 +127,31 @@ public class GameState {
     public GameState createStateFromMove(long move) {
         long playerConfiguration = getPlayerConfiguration();
         long targetPosition = getTargetPosition(move, currentPlayer);
-        // long targetPlayerState = ()
+        long targetPlayerConfiguration = (playerConfiguration & ~move) | targetPosition;
 
-        // TODO
-        return this;
+        int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[currentPlayer]);
+
+        // if is new token
+        if (move == targetPosition) {
+            targetPlayerConfiguration = Configurations.setNumTokensToPlay(targetPlayerConfiguration, numTokensToPlay-1);
+        } else {
+            targetPlayerConfiguration = Configurations.setNumTokensToPlay(targetPlayerConfiguration, numTokensToPlay);
+        }
+
+        final long[] targetConfigurations = configurations.clone();
+        targetConfigurations[currentPlayer] = targetPlayerConfiguration;
+
+        int targetPlayerNumber = (currentPlayer + 1) % NUM_PLAYERS;
+
+        return new GameState(targetConfigurations, targetPlayerNumber);
     }
 
     private List<GameState> getNextPossibleStates() {
         final long nextPossibleMoves = getNextPossibleMoves();
-        final long playerConfiguration = getPlayerConfiguration();
 
         final List<GameState> nextPossibleStates = new ArrayList<>(MAX_NEXT_MOVES);
         for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
-            final long targetPosition = getTargetPosition(move, currentPlayer);
-            long targetPlayerState = (playerConfiguration & ~move) | targetPosition;
-
-            int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[currentPlayer]);
-
-            // if is new token
-            if (move == targetPosition) {
-                targetPlayerState = Configurations.setNumTokensToPlay(targetPlayerState, numTokensToPlay-1);
-            } else {
-                targetPlayerState = Configurations.setNumTokensToPlay(targetPlayerState, numTokensToPlay);
-            }
-
-            final long[] target_configurations = configurations.clone();
-            target_configurations[currentPlayer] = targetPlayerState;
-            nextPossibleStates.add(new GameState(target_configurations));
+            nextPossibleStates.add(createStateFromMove(move));
         }
 
         return nextPossibleStates;
