@@ -37,13 +37,7 @@ public class GameState {
     private int currentPlayer;
 
     static void test() {
-        // GameState state = GameState.newEmptyGameState();
-        GameState state = new GameState(new long[] {
-                Configurations.PLAYER_ACTIVE_BITMASK | 64L,
-                Configurations.PLAYER_ACTIVE_BITMASK | 16L | 32L,
-                0L,
-                0L
-        }, 1);
+        GameState state = GameState.newEmptyGameState();
 
         test_state(state);
     }
@@ -56,6 +50,10 @@ public class GameState {
             int index = randomGenerator.nextInt(states.size());
             System.out.println(String.format("player %d moves:", state.getCurrentPlayer()));
             state = states.get(index);
+            if (state.isGameOver()) {
+                System.out.println("Game over!");
+                break;
+            }
             System.out.println(state.toString());
         }
     }
@@ -86,10 +84,6 @@ public class GameState {
     public float calculateScore(int playerNumber) {
         // TODO
         return 0.f;
-    }
-
-    private static int playerNumberToDirection(int playerNumber) {
-        return PLAYER_DIRECTIONS[playerNumber];
     }
 
     private long getEnemyConfiguration() {
