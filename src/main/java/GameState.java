@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+// TODO: players, that are not playing anymore should be skipped
+
 public class GameState {
     /*
      * A configuration is a bitmask defining the tokens of a player.
@@ -14,33 +16,37 @@ public class GameState {
      * The second player has the ground line (0, 0) to (0, 6).
      * The following players change clockwise.
      */
-    private static final byte NUM_PLAYERS = 4;
-    private static final byte MAX_NEXT_MOVES = 13;
+    private static final int NUM_PLAYERS = 4;
+    private static final int MAX_NEXT_MOVES = 13;
 
-    final static private byte[] PLAYER_DIRECTIONS = new byte[] {Configurations.FIELD_SIZE, 1, -Configurations.FIELD_SIZE, -1};
+    final static private int[] PLAYER_DIRECTIONS = new int[] {Configurations.FIELD_SIZE, 1, -Configurations.FIELD_SIZE, -1};
 
+    /**
+     * An array of configurations defining the positions of the tokens
+     */
     private long[] configurations;
+    /**
+     * The number of the player, who should do the next move.
+     */
+    private int currentPlayer;
 
     static void test() {
         Random randomGenerator = new Random();
 
         GameState state = GameState.newEmptyGameState();
 
-        byte playerNumber = 0;
-
         for (int i = 0; i < 50; i++) {
-            List<GameState> states = state.getNextPossibleStates(playerNumber);
+            List<GameState> states = state.getNextPossibleStates();
             int index = randomGenerator.nextInt(states.size());
             state = states.get(index);
-            System.out.println(String.format("player %d moves:", playerNumber));
+            System.out.println(String.format("player %d moves:", state.getCurrentPlayer()));
             System.out.println(state.toString());
-            playerNumber = (byte)((playerNumber + 1) % NUM_PLAYERS);
         }
-
     }
 
     private GameState(long[] configurations) {
         this.configurations = configurations;
+        this.currentPlayer = 0;
     }
 
     private static GameState newEmptyGameState() {
@@ -52,22 +58,26 @@ public class GameState {
         });
     }
 
-    private static byte playerNumberToDirection(byte playerNumber) {
+    public int getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    private static int playerNumberToDirection(int playerNumber) {
         return PLAYER_DIRECTIONS[playerNumber];
     }
 
-    private long getEnemyConfiguration(byte playerNumber) {
+    private long getEnemyConfiguration() {
         long enemyConfiguration = 0L;
-        for (byte playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
-            if (playerIndex != playerNumber) {
+        for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
+            if (playerIndex != currentPlayer) {
                 enemyConfiguration = enemyConfiguration | configurations[playerIndex];
             }
         }
         return enemyConfiguration & Configurations.FIELD_BITMASK;
     }
 
-    private long getPlayerConfiguration(byte playerNumber) {
-        return configurations[playerNumber] & Configurations.FIELD_BITMASK;
+    private long getPlayerConfiguration() {
+        return configurations[currentPlayer] & Configurations.FIELD_BITMASK;
     }
 
     private long getGeneralConfiguration() {
@@ -78,15 +88,15 @@ public class GameState {
         return generalConfiguration & Configurations.FIELD_BITMASK;
     }
 
-    private long getBaseLine(byte playerNumber) {
+    private static long getBaseLine(int playerNumber) {
         return Configurations.BASE_LINES[playerNumber];
     }
 
-    private long getNextPossibleMoves(byte playerNumber) {
-        final long playerConfiguration = getPlayerConfiguration(playerNumber);
+    private long getNextPossibleMoves() {
+        final long playerConfiguration = getPlayerConfiguration();
         final long generalConfiguration = getGeneralConfiguration();
 
-        final byte playerDirection = playerNumberToDirection(playerNumber);
+        final int playerDirection = playerNumberToDirection(currentPlayer);
 
         long nextPossibleMoves = 0L;
         for (long tokenPosition : new Configurations.TokenPositions(playerConfiguration)) {
@@ -95,45 +105,65 @@ public class GameState {
             }
         }
 
-        final byte numTokensToPlay = Configurations.getNumTokensToPlay(configurations[playerNumber]);
+        final int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[currentPlayer]);
         if (numTokensToPlay > 0) {
-            long freeBaseLine = getBaseLine(playerNumber) & ~generalConfiguration;
+            long freeBaseLine = getBaseLine(currentPlayer) & ~generalConfiguration;
             nextPossibleMoves |= freeBaseLine;
         }
 
         return nextPossibleMoves;
     }
 
-    private List<GameState> getNextPossibleStates(byte playerNumber) {
-        final long nextPossibleMoves = getNextPossibleMoves(playerNumber);
-        final long playerConfiguration = getPlayerConfiguration(playerNumber);
+    /**
+     * Returns a new State representing the state after moving the token of the player with playerNumber
+     * @param move The move to apply
+     * @return A new GameState with move applied
+     */
+    public GameState createStateFromMove(long move) {
+        long playerConfiguration = getPlayerConfiguration();
+        long targetPosition = getTargetPosition(move, currentPlayer);
+        // long targetPlayerState = ()
+
+        // TODO
+        return this;
+    }
+
+    private List<GameState> getNextPossibleStates() {
+        final long nextPossibleMoves = getNextPossibleMoves();
+        final long playerConfiguration = getPlayerConfiguration();
 
         final List<GameState> nextPossibleStates = new ArrayList<>(MAX_NEXT_MOVES);
         for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
-            final long targetPosition = getTargetPosition(playerNumber, move);
+            final long targetPosition = getTargetPosition(move, currentPlayer);
             long targetPlayerState = (playerConfiguration & ~move) | targetPosition;
 
-            byte numTokensToPlay = Configurations.getNumTokensToPlay(configurations[playerNumber]);
+            int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[currentPlayer]);
 
             // if is new token
             if (move == targetPosition) {
-                targetPlayerState = Configurations.setNumTokensToPlay(targetPlayerState, (byte)(numTokensToPlay-1));
+                targetPlayerState = Configurations.setNumTokensToPlay(targetPlayerState, numTokensToPlay-1);
             } else {
                 targetPlayerState = Configurations.setNumTokensToPlay(targetPlayerState, numTokensToPlay);
             }
 
             final long[] target_configurations = configurations.clone();
-            target_configurations[playerNumber] = targetPlayerState;
+            target_configurations[currentPlayer] = targetPlayerState;
             nextPossibleStates.add(new GameState(target_configurations));
         }
 
         return nextPossibleStates;
     }
 
-    private long getTargetPosition(byte playerNumber, long move) {
-        byte playerDirection = PLAYER_DIRECTIONS[playerNumber];
-        final long playerConfiguration = getPlayerConfiguration(playerNumber);
-        final long enemyConfiguration = getEnemyConfiguration(playerNumber);
+    /**
+     * Moves the token at the position given by move. The token has to be of the player with playerNumber
+     * @param playerNumber The number of the player, for which to move the token
+     * @param move Defines the token to move
+     * @return the positions of the token after moving
+     */
+    private long getTargetPosition(long move, int playerNumber) {
+        int playerDirection = PLAYER_DIRECTIONS[playerNumber];
+        final long playerConfiguration = getPlayerConfiguration();
+        final long enemyConfiguration = getEnemyConfiguration();
         final long generalConfiguration = enemyConfiguration | playerConfiguration;
 
         // check if field is empty
@@ -206,7 +236,7 @@ public class GameState {
         return targetPosition;
     }
 
-    private static long nextPositionInDirection(long position, byte playerDirection) {
+    private static long nextPositionInDirection(long position, int playerDirection) {
         if (playerDirection < 0) {
             return (position >> -playerDirection) & Configurations.FIELD_BITMASK;
         } else {
@@ -216,7 +246,7 @@ public class GameState {
 
     private static boolean canTokenMove(
             long tokenPosition,
-            byte playerDirection,
+            int playerDirection,
             long playerConfiguration,
             long generalConfiguration)
     {
@@ -242,7 +272,7 @@ public class GameState {
                     result.append('~');
                     continue;
                 }
-                for (byte playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
+                for (int playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
                     if ((configurations[playerNumber] & position) != 0) {
                         result.append(playerNumberToChar(playerNumber));
                     }
@@ -253,7 +283,7 @@ public class GameState {
         return result.toString();
     }
 
-    private static char playerNumberToChar(byte playerNumber) {
+    private static char playerNumberToChar(int playerNumber) {
         switch (playerNumber) {
             case 0: return '0';
             case 1: return '1';

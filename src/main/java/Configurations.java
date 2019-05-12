@@ -1,9 +1,9 @@
 import java.util.Iterator;
 
 public class Configurations {
-    static final byte FIELD_SIZE = 7;
-    private static final byte NUM_TOKENS = 7;
-    private static final byte NUM_FIELDS = 49;
+    static final int FIELD_SIZE = 7;
+    private static final int NUM_TOKENS = 7;
+    private static final int NUM_FIELDS = 49;
     static final long FIELD_BITMASK =            0b0000000000000001111111111111111111111111111111111111111111111111L;
     static final long TOKENS_TO_PLAY_BITMASK =   0b0000000000001110000000000000000000000000000000000000000000000000L;
     static final long[] BASE_LINES = new long[] {0b0000000000000000000000000000000000000000000000000000000001111111L,
@@ -12,7 +12,7 @@ public class Configurations {
                                                  0b0000000000000001000000100000010000001000000100000010000001000000L
     };
 
-    static long setNumTokensToPlay(long targetPlayerState, byte numTokensToPlay) {
+    static long setNumTokensToPlay(long targetPlayerState, int numTokensToPlay) {
         return (targetPlayerState & ~TOKENS_TO_PLAY_BITMASK) | (((long) numTokensToPlay) << NUM_FIELDS);
     }
 
@@ -48,14 +48,14 @@ public class Configurations {
         }
     }
 
-    public static byte getNumTokensFinished(long configuration) {
+    public static int getNumTokensFinished(long configuration) {
         long numTokensToPlay = configuration & TOKENS_TO_PLAY_BITMASK;
-        return (byte)(NUM_TOKENS - (numTokensToPlay >> NUM_FIELDS));
+        return (int)(NUM_TOKENS - (numTokensToPlay >> NUM_FIELDS));
     }
 
-    static byte getNumTokensToPlay(long configuration) {
+    static int getNumTokensToPlay(long configuration) {
         long numTokensToPlay = configuration & TOKENS_TO_PLAY_BITMASK;
-        return (byte)(numTokensToPlay >> NUM_FIELDS);
+        return (int)(numTokensToPlay >> NUM_FIELDS);
     }
 
     static String configurationToString(long configuration) {
