@@ -20,7 +20,12 @@ public class GameState {
     private static final int MAX_NEXT_MOVES = 13;
     private static final long INVALID_MOVE = 0L;
 
-    final static private int[] PLAYER_DIRECTIONS = new int[] {Configurations.FIELD_SIZE, 1, -Configurations.FIELD_SIZE, -1};
+    final static private int[] PLAYER_DIRECTIONS = new int[] {
+            Configurations.FIELD_SIZE,
+            1,
+            -Configurations.FIELD_SIZE,
+            -1
+    };
 
     /**
      * An array of configurations defining the positions of the tokens
@@ -32,9 +37,19 @@ public class GameState {
     private int currentPlayer;
 
     static void test() {
-        Random randomGenerator = new Random();
+        // GameState state = GameState.newEmptyGameState();
+        GameState state = new GameState(new long[] {
+                Configurations.PLAYER_ACTIVE_BITMASK | 64L,
+                Configurations.PLAYER_ACTIVE_BITMASK | 16L | 32L,
+                0L,
+                0L
+        }, 1);
 
-        GameState state = GameState.newEmptyGameState();
+        test_state(state);
+    }
+
+    static void test_state(GameState state) {
+        Random randomGenerator = new Random();
 
         for (int i = 0; i < 500; i++) {
             List<GameState> states = state.getNextPossibleStates();
@@ -107,11 +122,9 @@ public class GameState {
         final long playerConfiguration = getPlayerConfiguration();
         final long generalConfiguration = getGeneralConfiguration();
 
-        final int playerDirection = playerNumberToDirection(currentPlayer);
-
         long nextPossibleMoves = 0L;
         for (long tokenPosition : new Configurations.TokenPositions(playerConfiguration)) {
-            if (canTokenMove(tokenPosition, playerDirection, playerConfiguration, generalConfiguration)) {
+            if (canTokenMove(tokenPosition, currentPlayer, playerConfiguration, generalConfiguration)) {
                 nextPossibleMoves |= tokenPosition;
             }
         }
@@ -130,13 +143,13 @@ public class GameState {
      */
     private int getNextPlayerNumber() {
         int nextPlayerNumber = (currentPlayer + 1) % NUM_PLAYERS;
-        while (!Configurations.isPlayerActive(configurations[nextPlayerNumber])) {
-            nextPlayerNumber = (nextPlayerNumber + 1) % NUM_PLAYERS;
-            if (nextPlayerNumber == currentPlayer) {
-                throw new IllegalStateException("no player is active anymore.");
+        for (int i = 0; i < 5; i++) {
+            if (Configurations.isPlayerActive(configurations[nextPlayerNumber])) {
+                return nextPlayerNumber;
             }
+            nextPlayerNumber = (nextPlayerNumber + 1) % NUM_PLAYERS;
         }
-        return nextPlayerNumber;
+        throw new IllegalStateException("no players are activ anymore");
     }
 
     /**
@@ -196,7 +209,6 @@ public class GameState {
      * @return the positions of the token after moving
      */
     private long getTargetPosition(long move, int playerNumber) {
-        int playerDirection = PLAYER_DIRECTIONS[playerNumber];
         final long playerConfiguration = getPlayerConfiguration();
         final long enemyConfiguration = getEnemyConfiguration();
         final long generalConfiguration = enemyConfiguration | playerConfiguration;
@@ -210,10 +222,10 @@ public class GameState {
         boolean jumping = false;
         long position = move;
         while (true) {
-            final long nextPosition = nextPositionInDirection(position, playerDirection);
+            final long nextPosition = nextPositionInDirection(position, playerNumber);
 
             if (jumping) {
-                final long nextNextPosition = nextPositionInDirection(nextPosition, playerDirection);
+                final long nextNextPosition = nextPositionInDirection(nextPosition, playerNumber);
 
                 // if we are one field behind edge
                 if (nextPosition == 0) {
@@ -257,7 +269,7 @@ public class GameState {
                 {
                     // we assume that the field behind the enemy player is free,
                     // because otherwise the move would be invalid
-                    position = nextPositionInDirection(nextPosition, playerDirection);
+                    position = nextPositionInDirection(nextPosition, playerNumber);
                     jumping = true;
                 }
                 else // if there is no enemy in front of us
@@ -271,7 +283,14 @@ public class GameState {
         return targetPosition;
     }
 
-    private static long nextPositionInDirection(long position, int playerDirection) {
+    private static long nextPositionInDirection(long position, int playerNumber) {
+        int playerDirection = PLAYER_DIRECTIONS[playerNumber];
+
+        // If token is on enemy baseline, move out of the field
+        if ((position & Configurations.ENEMY_BASE_LINES[playerNumber]) != 0) {
+            return 0L;
+        }
+
         if (playerDirection < 0) {
             return (position >> -playerDirection) & Configurations.FIELD_BITMASK;
         } else {
@@ -281,18 +300,25 @@ public class GameState {
 
     private static boolean canTokenMove(
             long tokenPosition,
-            int playerDirection,
+            int playerNumber,
             long playerConfiguration,
             long generalConfiguration)
     {
         // if nextPosition is occupied by myself, return false
-        long nextPosition = nextPositionInDirection(tokenPosition, playerDirection);
+        long nextPosition = nextPositionInDirection(tokenPosition, playerNumber);
         if ((nextPosition & playerConfiguration) != 0) {
             return false;
         }
 
+        // if nextPosition is free
+        if ((nextPosition & generalConfiguration) == 0) {
+            return true;
+        }
+
         // Return whether nextNextPosition is free
-        long nextNextPosition = nextPositionInDirection(nextPosition, playerDirection);
+        // jumping out of field is possible (nextNextPosition == 0)
+        long nextNextPosition = nextPositionInDirection(nextPosition, playerNumber);
+
         return (nextNextPosition & generalConfiguration) == 0;
     }
 
