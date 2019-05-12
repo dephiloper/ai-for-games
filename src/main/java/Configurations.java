@@ -47,6 +47,10 @@ public class Configurations {
         }
     }
 
+    public static boolean isConfigurationFinished(long configuration) {
+        return (getNumTokensToPlay(configuration) == 0) && ((configuration & FIELD_BITMASK) == 0);
+    }
+
     public static int getNumTokensFinished(long configuration) {
         long numTokensToPlay = configuration & TOKENS_TO_PLAY_BITMASK;
         return (int)(NUM_TOKENS - (numTokensToPlay >> NUM_FIELDS));
