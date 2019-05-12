@@ -11,10 +11,8 @@ public class Configurations {
                                                  0b0000000000000001111111000000000000000000000000000000000000000000L,
                                                  0b0000000000000001000000100000010000001000000100000010000001000000L
     };
-
-    static long setNumTokensToPlay(long targetPlayerState, int numTokensToPlay) {
-        return (targetPlayerState & ~TOKENS_TO_PLAY_BITMASK) | (((long) numTokensToPlay) << NUM_FIELDS);
-    }
+    static final long PLAYER_ACTIVE_BITMASK =    0b0000000000010000000000000000000000000000000000000000000000000000L;
+    static final long PLAYER_INIT_CONFIGURATION = PLAYER_ACTIVE_BITMASK | TOKENS_TO_PLAY_BITMASK;
 
     static private class TokenIterator implements Iterator<Long> {
         private long configuration;
@@ -56,6 +54,22 @@ public class Configurations {
     static int getNumTokensToPlay(long configuration) {
         long numTokensToPlay = configuration & TOKENS_TO_PLAY_BITMASK;
         return (int)(numTokensToPlay >> NUM_FIELDS);
+    }
+
+    static long setNumTokensToPlay(long targetPlayerState, int numTokensToPlay) {
+        return (targetPlayerState & ~TOKENS_TO_PLAY_BITMASK) | (((long) numTokensToPlay) << NUM_FIELDS);
+    }
+
+    static boolean isPlayerActive(long configuration) {
+        return (configuration & PLAYER_ACTIVE_BITMASK) != 0;
+    }
+
+    static long setPlayerInactive(long configuration) {
+        return configuration & ~PLAYER_ACTIVE_BITMASK;
+    }
+
+    static long setPlayerActive(long configuration) {
+        return configuration | PLAYER_ACTIVE_BITMASK;
     }
 
     static String configurationToString(long configuration) {

@@ -18,6 +18,7 @@ public class GameState {
      */
     private static final int NUM_PLAYERS = 4;
     private static final int MAX_NEXT_MOVES = 13;
+    private static final long INVALID_MOVE = 0L;
 
     final static private int[] PLAYER_DIRECTIONS = new int[] {Configurations.FIELD_SIZE, 1, -Configurations.FIELD_SIZE, -1};
 
@@ -35,7 +36,7 @@ public class GameState {
 
         GameState state = GameState.newEmptyGameState();
 
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 500; i++) {
             List<GameState> states = state.getNextPossibleStates();
             int index = randomGenerator.nextInt(states.size());
             System.out.println(String.format("player %d moves:", state.getCurrentPlayer()));
@@ -56,15 +57,20 @@ public class GameState {
 
     private static GameState newEmptyGameState() {
         return new GameState(new long[]{
-                Configurations.TOKENS_TO_PLAY_BITMASK,
-                Configurations.TOKENS_TO_PLAY_BITMASK,
-                Configurations.TOKENS_TO_PLAY_BITMASK,
-                Configurations.TOKENS_TO_PLAY_BITMASK,
+                Configurations.PLAYER_INIT_CONFIGURATION,
+                Configurations.PLAYER_INIT_CONFIGURATION,
+                Configurations.PLAYER_INIT_CONFIGURATION,
+                Configurations.PLAYER_INIT_CONFIGURATION,
         });
     }
 
     public int getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    public float calculateScore(int playerNumber) {
+        // TODO
+        return 0.f;
     }
 
     private static int playerNumberToDirection(int playerNumber) {
@@ -120,38 +126,64 @@ public class GameState {
     }
 
     /**
+     * Returns the number of the next active player
+     */
+    private int getNextPlayerNumber() {
+        int nextPlayerNumber = (currentPlayer + 1) % NUM_PLAYERS;
+        while (!Configurations.isPlayerActive(configurations[nextPlayerNumber])) {
+            nextPlayerNumber = (nextPlayerNumber + 1) % NUM_PLAYERS;
+            if (nextPlayerNumber == currentPlayer) {
+                throw new IllegalStateException("no player is active anymore.");
+            }
+        }
+        return nextPlayerNumber;
+    }
+
+    /**
      * Returns a new State representing the state after moving the token of the player with playerNumber
-     * @param move The move to apply
+     * @param move The move to apply. If move == 0, the currentPlayer is set to invalid.
      * @return A new GameState with move applied
      */
     public GameState createStateFromMove(long move) {
-        long playerConfiguration = getPlayerConfiguration();
-        long targetPosition = getTargetPosition(move, currentPlayer);
-        long targetPlayerConfiguration = (playerConfiguration & ~move) | targetPosition;
+        final long[] targetConfigurations = configurations.clone();
 
-        int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[currentPlayer]);
-
-        // if is new token
-        if (move == targetPosition) {
-            targetPlayerConfiguration = Configurations.setNumTokensToPlay(targetPlayerConfiguration, numTokensToPlay-1);
+        // handle null move
+        if (move == INVALID_MOVE) {
+            targetConfigurations[currentPlayer] = Configurations.setPlayerInactive(configurations[currentPlayer]);
         } else {
-            targetPlayerConfiguration = Configurations.setNumTokensToPlay(targetPlayerConfiguration, numTokensToPlay);
+            long playerConfiguration = getPlayerConfiguration();
+            long targetPosition = getTargetPosition(move, currentPlayer);
+            long targetPlayerConfiguration = (playerConfiguration & ~move) | targetPosition;
+
+            int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[currentPlayer]);
+
+            // if is new token
+            if (move == targetPosition) {
+                targetPlayerConfiguration = Configurations.setNumTokensToPlay(targetPlayerConfiguration, numTokensToPlay-1);
+            } else {
+                targetPlayerConfiguration = Configurations.setNumTokensToPlay(targetPlayerConfiguration, numTokensToPlay);
+            }
+
+            targetPlayerConfiguration = Configurations.setPlayerActive(targetPlayerConfiguration);
+
+            targetConfigurations[currentPlayer] = targetPlayerConfiguration;
         }
 
-        final long[] targetConfigurations = configurations.clone();
-        targetConfigurations[currentPlayer] = targetPlayerConfiguration;
+        int nextPlayerNumber = getNextPlayerNumber();
 
-        int targetPlayerNumber = (currentPlayer + 1) % NUM_PLAYERS;
-
-        return new GameState(targetConfigurations, targetPlayerNumber);
+        return new GameState(targetConfigurations, nextPlayerNumber);
     }
 
     private List<GameState> getNextPossibleStates() {
         final long nextPossibleMoves = getNextPossibleMoves();
 
         final List<GameState> nextPossibleStates = new ArrayList<>(MAX_NEXT_MOVES);
-        for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
-            nextPossibleStates.add(createStateFromMove(move));
+        if (nextPossibleMoves == 0) {
+            nextPossibleStates.add(createStateFromMove(INVALID_MOVE));
+        } else {
+            for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
+                nextPossibleStates.add(createStateFromMove(move));
+            }
         }
 
         return nextPossibleStates;
