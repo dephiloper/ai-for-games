@@ -283,6 +283,25 @@ public class GameState {
         return targetPosition;
     }
 
+    public boolean isGameOver() {
+        boolean anyActive = false;
+        for (int playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
+            if (Configurations.isPlayerActive(configurations[playerNumber])) {
+                anyActive = true;
+            }
+        }
+
+        if (!anyActive) return true;
+
+        for (int playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
+            if (Configurations.isConfigurationFinished(configurations[playerNumber])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static long nextPositionInDirection(long position, int playerNumber) {
         int playerDirection = PLAYER_DIRECTIONS[playerNumber];
 
