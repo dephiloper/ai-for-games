@@ -20,6 +20,7 @@ public class GameState {
     private static final float EPSILON = 0.00001f;
 
     private static final float tokenPositionsWeight = 1.f;
+    private static final float tokenFinishedWeight = 8.f;
 
     final static private int[] PLAYER_DIRECTIONS = new int[] {
             Configurations.FIELD_SIZE,
@@ -103,8 +104,9 @@ public class GameState {
     }
 
     private float getRate(long configuration, int playerNumber) {
-        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber);
+        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) + tokenFinishedWeight * getRateByTokenFinished(configuration);
     }
+
 
     /**
      * Returns the Rating for the configuration by investigating only the progress of the tokens.
@@ -139,6 +141,10 @@ public class GameState {
             default:
                 throw new IllegalArgumentException("playerNumber is " + playerNumber);
         }
+    }
+
+    private static float getRateByTokenFinished(long configuration) {
+        return Configurations.getNumTokensFinished(configuration);
     }
 
     private long getEnemyConfiguration() {
