@@ -9,37 +9,44 @@ public class DecisionRuleAlgorithm {
 
     /**
      * Depending on the moves we could take minmax returns the score of the current state.
-     *
+     * lowerBound  @min: if we get something lower than lowerBound --> break;
+     * upperBound @max: if we get something higher than upperBound --> break;
      * @param state
      * @param depth
      * @return
      */
-    public float minmax(GameState state, int depth) {
+    public float minmax(GameState state, int depth, float lowerBound, float upperBound) {
         var moves = state.getNextPossibleMoves();
 
         if (depth == 0 || state.isGameOver()) {
             return state.calculateScore(playerNumber);
         }
 
-        var topScore = playerNumber == state.getCurrentPlayer() ? -Float.MAX_VALUE : Float.MAX_VALUE;
-
+        var topScore = playerNumber == state.getCurrentPlayer() ? lowerBound : upperBound;
 
         for (var move : new Configurations.MovePositions(moves)) {
             var newState = state.checkedCreateStateFromMove(move);
-            var score = minmax(newState, depth - 1);
 
             if (playerNumber == state.getCurrentPlayer()) {
-                if (score >= topScore) {
+                var score = minmax(newState, depth - 1, topScore, upperBound);
+                if (score > topScore) {
                     topScore = score;
 
                     if (depth == initialDepth) {
                         selectedMove = move;
                         System.out.println(String.format("minmax move: %d", log2(selectedMove)));
                     }
+
+                    if (topScore > upperBound)
+                        break;
                 }
             } else {
-                if (score <= topScore) {
+                var score = minmax(newState, depth - 1, lowerBound, topScore);
+                if (score < topScore) {
                     topScore = score;
+
+                    if (topScore < lowerBound)
+                        break;
                 }
             }
         }
@@ -51,12 +58,12 @@ public class DecisionRuleAlgorithm {
         Random randomGenerator = new Random();
         var dra = new DecisionRuleAlgorithm();
         dra.playerNumber = 0;
-        dra.initialDepth = 7;
+        dra.initialDepth = 9;
         var state = GameState.newEmptyGameState();
 
         while (!state.isGameOver()) {
             if (state.getCurrentPlayer() == dra.playerNumber) {
-                var score = dra.minmax(state, dra.initialDepth);
+                var score = dra.minmax(state, dra.initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
                 System.out.println(String.format("player: %d", state.getCurrentPlayer()));
                 System.out.println("-----------------------------");
                 System.out.println(String.format("this is the move we take: %d", log2(dra.selectedMove)));
