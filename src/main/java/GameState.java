@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-// TODO: players, that are not playing anymore should be skipped
-
 public class GameState {
     /*
      * A configuration is a bitmask defining the tokens of a player.
@@ -19,6 +17,9 @@ public class GameState {
     private static final int NUM_PLAYERS = 4;
     private static final int MAX_NEXT_MOVES = 13;
     private static final long INVALID_MOVE = 0L;
+    private static final float EPSILON = 0.00001f;
+
+    private static final float tokenPositionsWeight = 1.f;
 
     final static private int[] PLAYER_DIRECTIONS = new int[] {
             Configurations.FIELD_SIZE,
@@ -81,9 +82,63 @@ public class GameState {
         return currentPlayer;
     }
 
+    /**
+     * Calculates the score of the configuration from the view of the player with playerNumber.
+     * @param playerNumber The number of the player from whose point of view the score is assessed.
+     * @return The score of the configurations
+     */
     public float calculateScore(int playerNumber) {
-        // TODO
-        return 0.f;
+        float enemyScore = 0.f;
+        float playerScore = 0.f;
+        for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
+            float rate = getRate(configurations[playerIndex], playerIndex);
+            if (playerIndex == playerNumber) {
+                playerScore = rate;
+            } else {
+                enemyScore += rate;
+            }
+        }
+
+        return Math.abs(playerScore) / (Math.abs(enemyScore) + EPSILON);
+    }
+
+    private float getRate(long configuration, int playerNumber) {
+        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber);
+    }
+
+    /**
+     * Returns the Rating for the configuration by investigating only the progress of the tokens.
+     * @param configuration The configuration to rate
+     * @param playerNumber The Number of the player which controls the tokens in position.
+     * @return The score
+     */
+    public static float getRateByTokenPositions(long configuration, int playerNumber) {
+        int xSum = 0;
+        int ySum = 0;
+        long tokenPosition = 1;
+
+        for (int y = 0; y < Configurations.FIELD_SIZE; y++) {
+            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
+                if ((tokenPosition & configuration) != 0) {
+                    xSum += x+1;
+                    ySum += y+1;
+                }
+                tokenPosition = tokenPosition << 1;
+            }
+        }
+
+        switch (playerNumber) {
+            case 0:
+                return ySum;
+            case 1:
+                return xSum;
+            case 2:
+                return -ySum;
+            case 3:
+                return -xSum;
+            default:
+                throw new IllegalArgumentException("playerNumber is " + playerNumber);
+        }
     }
 
     private long getEnemyConfiguration() {
