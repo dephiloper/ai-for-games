@@ -68,7 +68,7 @@ public class GameState {
         this.currentPlayer = currentPlayer;
     }
 
-    private static GameState newEmptyGameState() {
+    public static GameState newEmptyGameState() {
         return new GameState(new long[]{
                 Configurations.PLAYER_INIT_CONFIGURATION,
                 Configurations.PLAYER_INIT_CONFIGURATION,
@@ -112,7 +112,7 @@ public class GameState {
         return Configurations.BASE_LINES[playerNumber];
     }
 
-    private long getNextPossibleMoves() {
+    public long getNextPossibleMoves() {
         final long playerConfiguration = getPlayerConfiguration();
         final long generalConfiguration = getGeneralConfiguration();
 
