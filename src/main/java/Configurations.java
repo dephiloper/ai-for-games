@@ -26,10 +26,10 @@ public class Configurations {
             return this.configuration != 0;
         }
 
+        /**
+         * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm for inspiration.
+         */
         public Long next() {
-            /*
-            See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ for inspiration.
-             */
             long old_configuration = configuration;
             this.configuration = this.configuration & (this.configuration - 1);
             return old_configuration ^ this.configuration;
@@ -45,6 +45,18 @@ public class Configurations {
         public Iterator<Long> iterator() {
             return new TokenIterator(this.configuration);
         }
+    }
+
+    /**
+     * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm.
+     */
+    static public int getNumTokens(long configuration) {
+        int count = 0;
+        while (configuration != 0) {
+            configuration &= (configuration - 1);
+            count++;
+        }
+        return count;
     }
 
     public static boolean isConfigurationFinished(long configuration) {
