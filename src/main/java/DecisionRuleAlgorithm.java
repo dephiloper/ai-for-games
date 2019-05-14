@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class DecisionRuleAlgorithm {
@@ -46,6 +45,8 @@ public class DecisionRuleAlgorithm {
 
         while (true) {
             var score = dra.minmax(state, dra.initialDepth);
+            System.out.println(String.format("player: %d", state.getCurrentPlayer()));
+            System.out.println(String.format("selected move: %d", log2(dra.selectedMove)));
             state = state.createStateFromMove(dra.selectedMove);
             System.out.println(state);
 
@@ -54,12 +55,26 @@ public class DecisionRuleAlgorithm {
                 for (var move : new Configurations.TokenPositions(state.getNextPossibleMoves()))
                     moves.add(move);
 
-                int index = randomGenerator.nextInt(moves.size());
-                state = state.createStateFromMove(moves.get(index));
+                System.out.println(String.format("player %s", state.getCurrentPlayer()));
+                if (moves.size() == 0) {
+                    System.out.println(String.format("selected move: %d", 0L));
+                    state = state.createStateFromMove(0L);
+                }
+                else {
+                    var index = randomGenerator.nextInt(moves.size());
+                    var move = moves.get(index);
+                    System.out.println(String.format("selected move: %d", log2(move)));
+                    state = state.createStateFromMove(move);
+                }
                 System.out.println(state);
             }
         }
 
 
+    }
+
+    private static int log2(long number)
+    {
+        return (int)(Math.log(number) / Math.log(2));
     }
 }
