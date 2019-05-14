@@ -236,6 +236,25 @@ public class GameState {
         return new GameState(targetConfigurations, nextPlayerNumber);
     }
 
+    /**
+     * Returns a new State representing the state after moving the token of the player with playerNumber.
+     * This function also checks if the given move is possible to execute.
+     * @param move The move to apply. If move == 0, the currentPlayer is set to invalid.
+     * @return A new GameState with move applied
+     */
+    public GameState checkedCreateStateFromMove(long move) {
+        long possibleMoves = getNextPossibleMoves();
+        if (((move & possibleMoves) == 0) && (move != INVALID_MOVE)) {
+            move = INVALID_MOVE;
+            System.err.println(String.format(
+                    "invalid move given: %s in state: \n%s",
+                    Configurations.configurationToString(move, currentPlayer),
+                    this)
+            );
+        }
+        return createStateFromMove(move);
+    }
+
     private List<GameState> getNextPossibleStates() {
         final long nextPossibleMoves = getNextPossibleMoves();
 
@@ -412,7 +431,7 @@ public class GameState {
         return result.toString();
     }
 
-    private static char playerNumberToChar(int playerNumber) {
+    public static char playerNumberToChar(int playerNumber) {
         switch (playerNumber) {
             case 0: return '0';
             case 1: return '1';

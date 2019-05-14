@@ -47,6 +47,23 @@ public class Configurations {
         }
     }
 
+    static public String configurationToString(long configuration, int playerNumber) {
+        StringBuilder result = new StringBuilder(51);
+
+        for (int y = Configurations.FIELD_SIZE-1; y >= 0; y--) {
+            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
+                final long position = (1L << (x + y * Configurations.FIELD_SIZE));
+                if ((position & configuration) == 0) {
+                    result.append('~');
+                } else {
+                    result.append(GameState.playerNumberToChar(playerNumber));
+                }
+            }
+            result.append('\n');
+        }
+        return result.toString();
+    }
+
     /**
      * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm.
      */
