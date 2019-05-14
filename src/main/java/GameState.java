@@ -20,7 +20,10 @@ public class GameState {
     private static final float EPSILON = 0.00001f;
 
     private static final float tokenPositionsWeight = 1.f;
-    private static final float tokenFinishedWeight = 8.f;
+    private static final float tokenFinishedWeight = 16.f;
+    // private static final float tokenToMoveWeight = 0.05f;
+    private static int[] XPOSITIONS;
+    private static int[] YPOSITIONS;
 
     final static private int[] PLAYER_DIRECTIONS = new int[] {
             Configurations.FIELD_SIZE,
@@ -28,6 +31,20 @@ public class GameState {
             -Configurations.FIELD_SIZE,
             -1
     };
+    final static private int[] BASELINE_POS = new int[] {0, 0, Configurations.FIELD_SIZE-1, Configurations.FIELD_SIZE-1};
+
+    static {
+        XPOSITIONS = new int[Configurations.NUM_FIELDS];
+        YPOSITIONS = new int[Configurations.NUM_FIELDS];
+
+        for (int y = 0; y < Configurations.FIELD_SIZE; y++) {
+            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
+                int pos = x + y * Configurations.FIELD_SIZE;
+                XPOSITIONS[pos] = x;
+                YPOSITIONS[pos] = y;
+            }
+        }
+    }
 
     /**
      * An array of configurations defining the positions of the tokens
@@ -104,9 +121,14 @@ public class GameState {
     }
 
     private float getRate(long configuration, int playerNumber) {
-        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) + tokenFinishedWeight * getRateByTokenFinished(configuration);
+        /*
+        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
+               tokenFinishedWeight * getRateByTokenFinished(configuration) +
+               tokenToMoveWeight * getRateByTokenMovable(playerNumber);
+         */
+        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
+                tokenFinishedWeight * getRateByTokenFinished(configuration);
     }
-
 
     /**
      * Returns the Rating for the configuration by investigating only the progress of the tokens.
@@ -115,37 +137,37 @@ public class GameState {
      * @return The score
      */
     public static float getRateByTokenPositions(long configuration, int playerNumber) {
-        int xSum = 0;
-        int ySum = 0;
-        long tokenPosition = 1;
+        int sum = 0;
+        final int base = BASELINE_POS[playerNumber];
 
-        for (int y = 0; y < Configurations.FIELD_SIZE; y++) {
-            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
-                if ((tokenPosition & configuration) != 0) {
-                    xSum += x+1;
-                    ySum += y+1;
-                }
-                tokenPosition = tokenPosition << 1;
+        // players which play in y direction
+        if (playerNumber == 0 || playerNumber == 2) {
+            for (long tokenPosition : new Configurations.TokenPositions(configuration)) {
+                int pos = log2(tokenPosition);
+                int yPos = YPOSITIONS[pos];
+                sum += Math.abs(yPos - base) + 1;
+            }
+        } else {
+            for (long tokenPosition : new Configurations.TokenPositions(configuration)) {
+                int pos = log2(tokenPosition);
+                int xPos = XPOSITIONS[pos];
+                sum += Math.abs(xPos - base) + 1;
             }
         }
 
-        switch (playerNumber) {
-            case 0:
-                return ySum;
-            case 1:
-                return xSum;
-            case 2:
-                return -ySum;
-            case 3:
-                return -xSum;
-            default:
-                throw new IllegalArgumentException("playerNumber is " + playerNumber);
-        }
+        return sum;
     }
 
     private static float getRateByTokenFinished(long configuration) {
         return Configurations.getNumTokensFinished(configuration);
     }
+
+    /*
+    private float getRateByTokenMovable(int playerNumber) {
+        long possibleMoves = getNextPossibleMoves(playerNumber);
+        return (float)Configurations.getNumTokens(possibleMoves);
+    }
+     */
 
     private long getEnemyConfiguration() {
         long enemyConfiguration = 0L;
@@ -157,8 +179,12 @@ public class GameState {
         return enemyConfiguration & Configurations.FIELD_BITMASK;
     }
 
+    private long getPlayerConfiguration(int playerNumber) {
+        return configurations[playerNumber] & Configurations.FIELD_BITMASK;
+    }
+
     private long getPlayerConfiguration() {
-        return configurations[currentPlayer] & Configurations.FIELD_BITMASK;
+        return getPlayerConfiguration(currentPlayer);
     }
 
     private long getGeneralConfiguration() {
@@ -174,19 +200,23 @@ public class GameState {
     }
 
     public long getNextPossibleMoves() {
-        final long playerConfiguration = getPlayerConfiguration();
+        return getNextPossibleMoves(currentPlayer);
+    }
+
+    public long getNextPossibleMoves(int playerNumber) {
+        final long playerConfiguration = getPlayerConfiguration(playerNumber);
         final long generalConfiguration = getGeneralConfiguration();
 
         long nextPossibleMoves = 0L;
         for (long tokenPosition : new Configurations.TokenPositions(playerConfiguration)) {
-            if (canTokenMove(tokenPosition, currentPlayer, playerConfiguration, generalConfiguration)) {
+            if (canTokenMove(tokenPosition, playerNumber, playerConfiguration, generalConfiguration)) {
                 nextPossibleMoves |= tokenPosition;
             }
         }
 
-        final int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[currentPlayer]);
+        final int numTokensToPlay = Configurations.getNumTokensToPlay(configurations[playerNumber]);
         if (numTokensToPlay > 0) {
-            long freeBaseLine = getBaseLine(currentPlayer) & ~generalConfiguration;
+            long freeBaseLine = getBaseLine(playerNumber) & ~generalConfiguration;
             nextPossibleMoves |= freeBaseLine;
         }
 
@@ -204,7 +234,7 @@ public class GameState {
             }
             nextPlayerNumber = (nextPlayerNumber + 1) % NUM_PLAYERS;
         }
-        throw new IllegalStateException("no players are activ anymore");
+        throw new IllegalStateException("no players are active anymore");
     }
 
     /**
@@ -445,5 +475,9 @@ public class GameState {
             case 3: return '3';
             default: throw new RuntimeException();
         }
+    }
+
+    public static int log2(long n){
+        return 63 - Long.numberOfLeadingZeros(n);
     }
 }

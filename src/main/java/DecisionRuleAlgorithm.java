@@ -11,9 +11,9 @@ public class DecisionRuleAlgorithm {
      * Depending on the moves we could take minmax returns the score of the current state.
      * lowerBound  @min: if we get something lower than lowerBound --> break;
      * upperBound @max: if we get something higher than upperBound --> break;
-     * @param state
-     * @param depth
-     * @return
+     * @param state The state to rate
+     * @param depth The current depth
+     * @return A score for the given state
      */
     public float minmax(GameState state, int depth, float lowerBound, float upperBound) {
         var moves = state.getNextPossibleMoves();
@@ -25,7 +25,7 @@ public class DecisionRuleAlgorithm {
         var topScore = playerNumber == state.getCurrentPlayer() ? lowerBound : upperBound;
 
         for (var move : new Configurations.MovePositions(moves)) {
-            var newState = state.checkedCreateStateFromMove(move);
+            var newState = state.createStateFromMove(move);
 
             if (playerNumber == state.getCurrentPlayer()) {
                 var score = minmax(newState, depth - 1, topScore, upperBound);
@@ -58,12 +58,12 @@ public class DecisionRuleAlgorithm {
         Random randomGenerator = new Random();
         var dra = new DecisionRuleAlgorithm();
         dra.playerNumber = 0;
-        dra.initialDepth = 9;
+        dra.initialDepth = 8;
         var state = GameState.newEmptyGameState();
 
         while (!state.isGameOver()) {
             if (state.getCurrentPlayer() == dra.playerNumber) {
-                var score = dra.minmax(state, dra.initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
+                dra.minmax(state, dra.initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
                 System.out.println(String.format("player: %d", state.getCurrentPlayer()));
                 System.out.println("-----------------------------");
                 System.out.println(String.format("this is the move we take: %d", log2(dra.selectedMove)));

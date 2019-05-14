@@ -3,7 +3,7 @@ import java.util.Iterator;
 public class Configurations {
     static final int FIELD_SIZE = 7;
     private static final int NUM_TOKENS = 7;
-    private static final int NUM_FIELDS = 49;
+    static final int NUM_FIELDS = 49;
     static final long FIELD_BITMASK =            0b0000000000000001111111111111111111111111111111111111111111111111L;
     static final long TOKENS_TO_PLAY_BITMASK =   0b0000000000001110000000000000000000000000000000000000000000000000L;
     static final long[] BASE_LINES = new long[] {0b0000000000000000000000000000000000000000000000000000000001111111L,
@@ -147,14 +147,15 @@ public class Configurations {
         return configuration | PLAYER_ACTIVE_BITMASK;
     }
 
+    @SuppressWarnings("unused")
     static String configurationToString(long configuration) {
         StringBuilder result = new StringBuilder(51);
         for (int y = Configurations.FIELD_SIZE-1; y >= 0; y--) {
             for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
                 if ((configuration & (1L << (x + y* Configurations.FIELD_SIZE))) != 0) {
-                    result.append('1');
+                    result.append('X');
                 } else {
-                    result.append('0');
+                    result.append('~');
                 }
             }
             result.append('\n');
