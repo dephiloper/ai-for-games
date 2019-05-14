@@ -36,6 +36,36 @@ public class Configurations {
         }
     }
 
+    static private class MoveIterator implements Iterator<Long> {
+        private long configuration;
+        private boolean isInvalidMove;
+
+        private MoveIterator(long configuration) {
+            this.configuration = configuration;
+            this.isInvalidMove = configuration == GameState.INVALID_MOVE;
+        }
+
+        public boolean hasNext() {
+            if (isInvalidMove) {
+                return this.configuration == 0;
+            }
+            return this.configuration != 0;
+        }
+
+        /**
+         * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm for inspiration.
+         */
+        public Long next() {
+            if (isInvalidMove) {
+                this.configuration = 1L;
+                return GameState.INVALID_MOVE;
+            }
+            long old_configuration = configuration;
+            this.configuration = this.configuration & (this.configuration - 1);
+            return old_configuration ^ this.configuration;
+        }
+    }
+
     static public class TokenPositions implements Iterable<Long> {
         private long configuration;
 
@@ -44,6 +74,17 @@ public class Configurations {
         }
         public Iterator<Long> iterator() {
             return new TokenIterator(this.configuration);
+        }
+    }
+
+    static public class MovePositions implements Iterable<Long> {
+        private long configuration;
+
+        MovePositions(long configuration) {
+            this.configuration = configuration & Configurations.FIELD_BITMASK;
+        }
+        public Iterator<Long> iterator() {
+            return new MoveIterator(this.configuration);
         }
     }
 

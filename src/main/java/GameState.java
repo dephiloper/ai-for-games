@@ -16,7 +16,7 @@ public class GameState {
      */
     private static final int NUM_PLAYERS = 4;
     private static final int MAX_NEXT_MOVES = 13;
-    private static final long INVALID_MOVE = 0L;
+    public static final long INVALID_MOVE = 0L;
     private static final float EPSILON = 0.00001f;
 
     private static final float tokenPositionsWeight = 1.f;
@@ -244,13 +244,13 @@ public class GameState {
      */
     public GameState checkedCreateStateFromMove(long move) {
         long possibleMoves = getNextPossibleMoves();
-        if (((move & possibleMoves) == 0) && (move != INVALID_MOVE)) {
-            move = INVALID_MOVE;
+        if (((move & possibleMoves) == 0) && (move != INVALID_MOVE) || Configurations.getNumTokens(move) > 1) {
             System.err.println(String.format(
-                    "invalid move given: %s in state: \n%s",
+                    "invalid move given: \n%s in state: \n%s",
                     Configurations.configurationToString(move, currentPlayer),
                     this)
             );
+            move = INVALID_MOVE;
         }
         return createStateFromMove(move);
     }
