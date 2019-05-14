@@ -26,10 +26,10 @@ public class Configurations {
             return this.configuration != 0;
         }
 
+        /**
+         * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm for inspiration.
+         */
         public Long next() {
-            /*
-            See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ for inspiration.
-             */
             long old_configuration = configuration;
             this.configuration = this.configuration & (this.configuration - 1);
             return old_configuration ^ this.configuration;
@@ -45,6 +45,35 @@ public class Configurations {
         public Iterator<Long> iterator() {
             return new TokenIterator(this.configuration);
         }
+    }
+
+    static public String configurationToString(long configuration, int playerNumber) {
+        StringBuilder result = new StringBuilder(51);
+
+        for (int y = Configurations.FIELD_SIZE-1; y >= 0; y--) {
+            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
+                final long position = (1L << (x + y * Configurations.FIELD_SIZE));
+                if ((position & configuration) == 0) {
+                    result.append('~');
+                } else {
+                    result.append(GameState.playerNumberToChar(playerNumber));
+                }
+            }
+            result.append('\n');
+        }
+        return result.toString();
+    }
+
+    /**
+     * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm.
+     */
+    static public int getNumTokens(long configuration) {
+        int count = 0;
+        while (configuration != 0) {
+            configuration &= (configuration - 1);
+            count++;
+        }
+        return count;
     }
 
     public static boolean isConfigurationFinished(long configuration) {
