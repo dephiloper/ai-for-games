@@ -1,7 +1,9 @@
+package de.htw.aiforgames;
+
 import java.util.Iterator;
 
 public class Configurations {
-    static final int FIELD_SIZE = 7;
+    public static final int FIELD_SIZE = 7;
     private static final int NUM_TOKENS = 7;
     static final int NUM_FIELDS = 49;
     static final long FIELD_BITMASK =            0b0000000000000001111111111111111111111111111111111111111111111111L;
