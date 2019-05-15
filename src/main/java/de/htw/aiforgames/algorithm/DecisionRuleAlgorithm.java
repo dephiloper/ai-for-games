@@ -1,6 +1,7 @@
-package de.htw.aiforgames;
+package de.htw.aiforgames.algorithm;
 
-import de.htw.aiforgames.algorithm.DecisionAlgorithm;
+import de.htw.aiforgames.Configurations;
+import de.htw.aiforgames.GameState;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -108,6 +109,7 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
     }
 
     public long getNextMove(GameState state) {
+        selectedMove = GameState.INVALID_MOVE;
         minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
 
         return selectedMove;
