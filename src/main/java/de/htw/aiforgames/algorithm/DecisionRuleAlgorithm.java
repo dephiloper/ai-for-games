@@ -79,11 +79,13 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
         Random randomGenerator = new Random();
         var dra = new DecisionRuleAlgorithm(DEFAULT_DEPTH);
 
-        dra.setPlayerNumber(0);
+        dra.setPlayerNumber(1);
 
         var state = GameState.newEmptyGameState();
 
         float predictedScore = 0.f;
+
+        // TODO: check player number == 1
 
         while (!state.isGameOver()) {
             if (state.getCurrentPlayer() == dra.playerNumber) {
