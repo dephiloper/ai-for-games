@@ -20,6 +20,12 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
      * Depending on the moves we could take minmax returns the score of the current state.
      * lowerBound  @min: if we get something lower than lowerBound --> break;
      * upperBound @max: if we get something higher than upperBound --> break;
+     *
+     * Beispiel: Man nehme an wir sind in max und haben bereits einen topScore, dann interessieren uns nur Werte die höher sind als dieser topScore.
+     * Deshalb gibt man in der max funktion den topScore als lowerBound an die min funktion. Sobald in der min funktion ein score ermittelt wird,
+     * der kleiner ist als der lowerBound (topScore der aufrufenden max funktion) kann die weitere Berechnung abgebrochen werden.
+     * vice versa gilt das auch für die min funktion
+     *
      * @param state The state to rate
      * @param depth The current depth
      * @return A score for the given state
