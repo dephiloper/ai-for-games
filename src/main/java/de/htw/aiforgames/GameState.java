@@ -1,3 +1,5 @@
+package de.htw.aiforgames;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,8 +24,6 @@ public class GameState {
     private static final float tokenPositionsWeight = 1.f;
     private static final float tokenFinishedWeight = 16.f;
     // private static final float tokenToMoveWeight = 0.05f;
-    private static int[] XPOSITIONS;
-    private static int[] YPOSITIONS;
 
     final static private int[] PLAYER_DIRECTIONS = new int[] {
             Configurations.FIELD_SIZE,
@@ -32,10 +32,11 @@ public class GameState {
             -1
     };
     final static private int[] BASELINE_POS = new int[] {0, 0, Configurations.FIELD_SIZE-1, Configurations.FIELD_SIZE-1};
+    final static private int[][] PLAYER_NUMBER_TO_XY_POSITIONS = new int[4][];
 
     static {
-        XPOSITIONS = new int[Configurations.NUM_FIELDS];
-        YPOSITIONS = new int[Configurations.NUM_FIELDS];
+        int[] XPOSITIONS = new int[Configurations.NUM_FIELDS];
+        int[] YPOSITIONS = new int[Configurations.NUM_FIELDS];
 
         for (int y = 0; y < Configurations.FIELD_SIZE; y++) {
             for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
@@ -44,6 +45,11 @@ public class GameState {
                 YPOSITIONS[pos] = y;
             }
         }
+
+        PLAYER_NUMBER_TO_XY_POSITIONS[0] = YPOSITIONS;
+        PLAYER_NUMBER_TO_XY_POSITIONS[1] = XPOSITIONS;
+        PLAYER_NUMBER_TO_XY_POSITIONS[2] = YPOSITIONS;
+        PLAYER_NUMBER_TO_XY_POSITIONS[3] = XPOSITIONS;
     }
 
     /**
@@ -106,6 +112,7 @@ public class GameState {
      * @return The score of the configurations
      */
     public float calculateScore(int playerNumber) {
+        /*
         float enemyScore = 0.f;
         float playerScore = 0.f;
         for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
@@ -116,8 +123,10 @@ public class GameState {
                 enemyScore += rate;
             }
         }
-
         return Math.abs(playerScore) / (Math.abs(enemyScore) + EPSILON);
+         */
+
+        return Math.abs(getRate(configurations[currentPlayer], currentPlayer));
     }
 
     private float getRate(long configuration, int playerNumber) {
@@ -126,7 +135,7 @@ public class GameState {
                tokenFinishedWeight * getRateByTokenFinished(configuration) +
                tokenToMoveWeight * getRateByTokenMovable(playerNumber);
          */
-        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
+        return tokenPositionsWeight * getRateByTokenPositions2(configuration, playerNumber) +
                 tokenFinishedWeight * getRateByTokenFinished(configuration);
     }
 
@@ -139,19 +148,28 @@ public class GameState {
     public static float getRateByTokenPositions(long configuration, int playerNumber) {
         int sum = 0;
         final int base = BASELINE_POS[playerNumber];
+        int[] positions = PLAYER_NUMBER_TO_XY_POSITIONS[playerNumber];
 
-        // players which play in y direction
-        if (playerNumber == 0 || playerNumber == 2) {
-            for (long tokenPosition : new Configurations.TokenPositions(configuration)) {
-                int pos = log2(tokenPosition);
-                int yPos = YPOSITIONS[pos];
-                sum += Math.abs(yPos - base) + 1;
-            }
-        } else {
-            for (long tokenPosition : new Configurations.TokenPositions(configuration)) {
-                int pos = log2(tokenPosition);
-                int xPos = XPOSITIONS[pos];
-                sum += Math.abs(xPos - base) + 1;
+        for (long tokenPosition : new Configurations.TokenPositions(configuration)) {
+            int pos = log2(tokenPosition);
+            int xyPos = positions[pos];
+            sum += Math.abs(xyPos - base) + 1;
+        }
+
+        return sum;
+    }
+
+    public static float getRateByTokenPositions2(long configuration, int playerNumber) {
+        long mask = Configurations.BASE_LINES[playerNumber];
+        int playerDirection = PLAYER_DIRECTIONS[playerNumber];
+        int sum = 0;
+
+        for (int i = 0; i < 7; i++) {
+            sum += i * Configurations.getNumTokens(configuration & mask);
+            if (playerDirection < 0) {
+                mask >>= -playerDirection;
+            } else {
+                mask <<= playerDirection;
             }
         }
 
@@ -165,7 +183,7 @@ public class GameState {
     /*
     private float getRateByTokenMovable(int playerNumber) {
         long possibleMoves = getNextPossibleMoves(playerNumber);
-        return (float)Configurations.getNumTokens(possibleMoves);
+        return (float)de.htw.aiforgames.Configurations.getNumTokens(possibleMoves);
     }
      */
 

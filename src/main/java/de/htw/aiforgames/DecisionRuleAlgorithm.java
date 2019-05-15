@@ -1,11 +1,20 @@
+package de.htw.aiforgames;
+
+import de.htw.aiforgames.algorithm.DecisionAlgorithm;
+
 import java.util.ArrayList;
 import java.util.Random;
 
-public class DecisionRuleAlgorithm {
+public class DecisionRuleAlgorithm implements DecisionAlgorithm {
 
     private int initialDepth;
-    private int playerNumber;
+    final private int playerNumber;
     private long selectedMove = 0L;
+
+    public DecisionRuleAlgorithm(int initialDepth, int playerNumber) {
+        this.initialDepth = initialDepth;
+        this.playerNumber = playerNumber;
+    }
 
     /**
      * Depending on the moves we could take minmax returns the score of the current state.
@@ -56,9 +65,8 @@ public class DecisionRuleAlgorithm {
 
     public static void main(String[] args) {
         Random randomGenerator = new Random();
-        var dra = new DecisionRuleAlgorithm();
-        dra.playerNumber = 0;
-        dra.initialDepth = 8;
+        var dra = new DecisionRuleAlgorithm(9, 0);
+
         var state = GameState.newEmptyGameState();
 
         while (!state.isGameOver()) {
@@ -87,11 +95,15 @@ public class DecisionRuleAlgorithm {
                 System.out.println(state);
             }
         }
-
-
     }
 
     private static int log2(long number) {
         return (int) (Math.log(number) / Math.log(2));
+    }
+
+    public long getNextMove(GameState state) {
+        minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
+
+        return selectedMove;
     }
 }
