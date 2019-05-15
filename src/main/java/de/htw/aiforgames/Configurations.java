@@ -71,7 +71,7 @@ public class Configurations {
     static public class TokenPositions implements Iterable<Long> {
         private long configuration;
 
-        TokenPositions(long configuration) {
+        public TokenPositions(long configuration) {
             this.configuration = configuration & Configurations.FIELD_BITMASK;
         }
         public Iterator<Long> iterator() {
@@ -82,7 +82,7 @@ public class Configurations {
     static public class MovePositions implements Iterable<Long> {
         private long configuration;
 
-        MovePositions(long configuration) {
+        public MovePositions(long configuration) {
             this.configuration = configuration & Configurations.FIELD_BITMASK;
         }
         public Iterator<Long> iterator() {
