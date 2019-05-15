@@ -60,9 +60,6 @@ public class Client {
 
     private static Move createServerMove(int playerNumber, long move) {
         var serverMove = Utils.floorLog2(move);
-        var x = serverMove % 7;
-        var y = serverMove / 7;
-
-        return new Move(playerNumber, x, y);
+        return new Move(playerNumber, serverMove % 7, serverMove / 7);
     }
 }
