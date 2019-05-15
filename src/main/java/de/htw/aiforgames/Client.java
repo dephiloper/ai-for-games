@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
 
-public class Client implements Runnable {
+public class Client {
     private int playerNumber;
     private NetworkClient networkClient;
     private DecisionAlgorithm decisionAlgorithm;
@@ -41,8 +41,7 @@ public class Client implements Runnable {
         return new Client(networkClient.getMyPlayerNumber(), networkClient, decisionAlgorithm);
     }
 
-    @Override
-    public void run() {
+    public void execute() {
         while (!gameState.isGameOver()) {
             var serverMove = this.networkClient.receiveMove(); // blocking
             if (serverMove == null) { // our turn
@@ -63,6 +62,8 @@ public class Client implements Runnable {
 
     private static Move createServerMove(int playerNumber, long move) {
         var serverMove = Utils.floorLog2(move);
-        return new Move(playerNumber, serverMove % 7, serverMove / 7);
+        var x = serverMove % 7;
+        var y = serverMove / 7;
+        return new Move(playerNumber, x, y);
     }
 }

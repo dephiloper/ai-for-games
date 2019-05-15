@@ -21,18 +21,17 @@ public class RandomAlgorithm implements DecisionAlgorithm {
         long nextPossibleMoves = state.getNextPossibleMoves();
 
         int numMoves = Configurations.getNumTokens(nextPossibleMoves);
-        if (numMoves == 0) {
-            return GameState.INVALID_MOVE;
-        }
-        int moveIndex = randomGenerator.nextInt(numMoves);
+        if (numMoves > 0) {
+            int moveIndex = randomGenerator.nextInt(numMoves);
 
-        int index = 0;
-        for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
-            if (index == moveIndex) {
-                return move;
+            int index = 0;
+            for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
+                if (index == moveIndex) {
+                    return move;
+                }
+                index++;
             }
         }
-
         return GameState.INVALID_MOVE;
     }
 }
