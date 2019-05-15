@@ -108,6 +108,7 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
         return (int) (Math.log(number) / Math.log(2));
     }
 
+    @Override
     public long getNextMove(GameState state) {
         selectedMove = GameState.INVALID_MOVE;
         minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
