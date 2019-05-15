@@ -16,14 +16,14 @@ public class GameState {
      * The second player has the ground line (0, 0) to (0, 6).
      * The following players change clockwise.
      */
-    private static final int NUM_PLAYERS = 4;
+    public static final int NUM_PLAYERS = 4;
     private static final int MAX_NEXT_MOVES = 13;
     public static final long INVALID_MOVE = 0L;
     private static final float EPSILON = 0.00001f;
 
     private static final float tokenPositionsWeight = 1.f;
     private static final float tokenFinishedWeight = 16.f;
-    // private static final float tokenToMoveWeight = 0.05f;
+    private static final float tokenToMoveWeight = 0.5f;
 
     final static private int[] PLAYER_DIRECTIONS = new int[] {
             Configurations.FIELD_SIZE,
@@ -130,13 +130,9 @@ public class GameState {
     }
 
     private float getRate(long configuration, int playerNumber) {
-        /*
         return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
                tokenFinishedWeight * getRateByTokenFinished(configuration) +
                tokenToMoveWeight * getRateByTokenMovable(playerNumber);
-         */
-        return tokenPositionsWeight * getRateByTokenPositions2(configuration, playerNumber) +
-                tokenFinishedWeight * getRateByTokenFinished(configuration);
     }
 
     /**
@@ -180,12 +176,14 @@ public class GameState {
         return Configurations.getNumTokensFinished(configuration);
     }
 
-    /*
     private float getRateByTokenMovable(int playerNumber) {
         long possibleMoves = getNextPossibleMoves(playerNumber);
-        return (float)de.htw.aiforgames.Configurations.getNumTokens(possibleMoves);
+        int numTokensMovable = Configurations.getNumTokens(possibleMoves);
+        if (numTokensMovable == 0) {
+            return -500.f;
+        }
+        return (float)numTokensMovable;
     }
-     */
 
     private long getEnemyConfiguration() {
         long enemyConfiguration = 0L;
