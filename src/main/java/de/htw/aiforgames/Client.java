@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
 
-public class Client {
+public class Client implements Runnable {
     private int playerNumber;
     private NetworkClient networkClient;
     private DecisionAlgorithm decisionAlgorithm;
@@ -20,10 +20,12 @@ public class Client {
         this.networkClient = networkClient;
         this.decisionAlgorithm = decisionAlgorithm;
         this.gameState = GameState.newEmptyGameState();
+
+        this.decisionAlgorithm.setPlayerNumber(playerNumber);
     }
 
     public static Client create(String serverAddress, String teamName, DecisionAlgorithm decisionAlgorithm) {
-        return create(serverAddress, teamName, "test1.png", decisionAlgorithm);
+        return create(serverAddress, teamName, "/test1.png", decisionAlgorithm);
     }
 
     public static Client create(String serverAddress, String teamName, String logoPath, DecisionAlgorithm decisionAlgorithm) {
@@ -39,7 +41,8 @@ public class Client {
         return new Client(networkClient.getMyPlayerNumber(), networkClient, decisionAlgorithm);
     }
 
-    void run() {
+    @Override
+    public void run() {
         while (!gameState.isGameOver()) {
             var serverMove = this.networkClient.receiveMove(); // blocking
             if (serverMove == null) { // our turn

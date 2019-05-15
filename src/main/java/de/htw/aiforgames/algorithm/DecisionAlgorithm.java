@@ -7,6 +7,7 @@ import lenz.htw.sawhian.Move;
 
 public interface DecisionAlgorithm {
     long getNextMove(GameState state);
+    default void setPlayerNumber(int playerNumber) {}
 
     static Move moveToServerMove(long move, int playerNumber) {
         int tokenPos = Utils.floorLog2(move);

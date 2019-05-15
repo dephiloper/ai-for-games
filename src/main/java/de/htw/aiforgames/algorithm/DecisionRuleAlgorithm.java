@@ -10,11 +10,15 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
     public static final int DEFAULT_DEPTH = 9;
 
     private int initialDepth;
-    final private int playerNumber;
+    private int playerNumber = -1;
     private long selectedMove = 0L;
 
-    public DecisionRuleAlgorithm(int initialDepth, int playerNumber) {
+    public DecisionRuleAlgorithm(int initialDepth) {
         this.initialDepth = initialDepth;
+    }
+
+    @Override
+    public void setPlayerNumber(int playerNumber) {
         this.playerNumber = playerNumber;
     }
 
@@ -73,7 +77,9 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
 
     public static void main(String[] args) {
         Random randomGenerator = new Random();
-        var dra = new DecisionRuleAlgorithm(DEFAULT_DEPTH, 0);
+        var dra = new DecisionRuleAlgorithm(DEFAULT_DEPTH);
+
+        dra.setPlayerNumber(0);
 
         var state = GameState.newEmptyGameState();
 
@@ -116,6 +122,9 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
 
     @Override
     public long getNextMove(GameState state) {
+        if (playerNumber == -1) {
+            throw new IllegalStateException("Player number == -1");
+        }
         selectedMove = GameState.INVALID_MOVE;
         minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
 
