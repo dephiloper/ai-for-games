@@ -151,7 +151,7 @@ public class GameState {
         int[] positions = PLAYER_NUMBER_TO_XY_POSITIONS[playerNumber];
 
         for (long tokenPosition : new Configurations.TokenPositions(configuration)) {
-            int pos = log2(tokenPosition);
+            int pos = Utils.floorLog2(tokenPosition);
             int xyPos = positions[pos];
             sum += Math.abs(xyPos - base) + 1;
         }
@@ -493,9 +493,5 @@ public class GameState {
             case 3: return '3';
             default: throw new RuntimeException();
         }
-    }
-
-    public static int log2(long n){
-        return 63 - Long.numberOfLeadingZeros(n);
     }
 }
