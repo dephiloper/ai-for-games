@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class DecisionRuleAlgorithm implements DecisionAlgorithm {
+    public static final int DEFAULT_DEPTH = 9;
 
     private int initialDepth;
     final private int playerNumber;
@@ -72,18 +73,23 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
 
     public static void main(String[] args) {
         Random randomGenerator = new Random();
-        var dra = new DecisionRuleAlgorithm(9, 0);
+        var dra = new DecisionRuleAlgorithm(DEFAULT_DEPTH, 0);
 
         var state = GameState.newEmptyGameState();
 
+        float predictedScore = 0.f;
+
         while (!state.isGameOver()) {
             if (state.getCurrentPlayer() == dra.playerNumber) {
-                dra.minmax(state, dra.initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
-                System.out.println(String.format("player: %d", state.getCurrentPlayer()));
                 System.out.println("-----------------------------");
+                System.out.println(String.format("player: %d", state.getCurrentPlayer()));
+                System.out.println("Last predicted score " + predictedScore);
+                for (int i = 0; i < GameState.NUM_PLAYERS; i++) {
+                    System.out.println("score for player " + i + ": " + state.calculateScore(i));
+                }
+                predictedScore = dra.minmax(state, dra.initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
                 System.out.println(String.format("this is the move we take: %d", log2(dra.selectedMove)));
                 state = state.checkedCreateStateFromMove(dra.selectedMove);
-                System.out.println(state);
             } else {
                 var moves = new ArrayList<Long>();
                 for (var move : new Configurations.TokenPositions(state.getNextPossibleMoves()))
@@ -99,8 +105,8 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
                     System.out.println(String.format("selected move: %d", log2(move)));
                     state = state.checkedCreateStateFromMove(move);
                 }
-                System.out.println(state);
             }
+            System.out.println(state);
         }
     }
 
