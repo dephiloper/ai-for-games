@@ -6,7 +6,8 @@ import java.util.Random;
 
 class Test {
     public static void main(String[] args) {
-        testRateFunctions();
+        // testRateFunctions();
+        testLog2();
     }
 
     static void testRateFunctions() {
@@ -42,5 +43,14 @@ class Test {
         System.out.println("rate by token movable: " + gameState.getRateByTokenMovable(playerNumber));
         System.out.println("rate by token token finished: " + GameState.getRateByTokenFinished(configuration));
 
+    }
+
+    static void testLog2() {
+        long l = 1L;
+        for (int i = 0; i < 64; i++) {
+            System.out.println(Utils.floorLog2(l));
+            l <<= 1;
+        }
+        System.out.println(Utils.floorLog2(0L));
     }
 }

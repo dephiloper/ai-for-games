@@ -26,10 +26,10 @@ public class Main {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        // new Thread(() -> Server.runOnceAndReturnTheWinner(5)).start();
-        // Thread.sleep(2000);
+        new Thread(() -> Server.runOnceAndReturnTheWinner(5)).start();
+        Thread.sleep(1000);
 
-        ClientWrapper decisionClient = new ClientWrapper(null, "Team A", new DecisionRuleAlgorithm(9));
+        ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot", new DecisionRuleAlgorithm(8));
         ClientWrapper randomClient0 = new ClientWrapper(null, "Team B", new RandomAlgorithm());
         ClientWrapper randomClient1 = new ClientWrapper(null, "Team C", new RandomAlgorithm());
         ClientWrapper randomClient2 = new ClientWrapper(null, "Team D", new RandomAlgorithm());

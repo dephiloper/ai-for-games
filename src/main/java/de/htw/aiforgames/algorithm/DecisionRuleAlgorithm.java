@@ -55,7 +55,7 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
 
                     if (depth == initialDepth) {
                         selectedMove = move;
-                        System.out.println(String.format("minmax move: %d", log2(selectedMove)));
+                        // System.out.println(String.format("minmax move: %d", log2(selectedMove)));
                     }
 
                     if (topScore > upperBound)

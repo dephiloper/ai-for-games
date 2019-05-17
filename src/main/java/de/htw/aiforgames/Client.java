@@ -7,7 +7,6 @@ import lenz.htw.sawhian.net.NetworkClient;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.math.BigInteger;
 
 public class Client {
     private int playerNumber;
@@ -43,13 +42,24 @@ public class Client {
 
     public void execute() {
         while (!gameState.isGameOver()) {
-            var serverMove = this.networkClient.receiveMove(); // blocking
+            Move serverMove;
+            try {
+                serverMove = this.networkClient.receiveMove(); // blocking
+            } catch (RuntimeException ex) {
+                System.out.println("client " + playerNumber + " is out.");
+                break;
+            }
             if (serverMove == null) { // our turn
+                while (playerNumber != gameState.getCurrentPlayer()) {
+                    gameState = gameState.createStateFromMove(GameState.INVALID_MOVE);
+                }
                 var move = this.decisionAlgorithm.getNextMove(this.gameState);
                 serverMove = createServerMove(this.playerNumber, move);
                 this.networkClient.sendMove(serverMove);
-                // this.gameState = this.gameState.checkedCreateStateFromMove(move);
             } else { // enemy turn
+                while (serverMove.player != gameState.getCurrentPlayer()) {
+                    gameState = gameState.createStateFromMove(GameState.INVALID_MOVE);
+                }
                 var move = createMove(serverMove);
                 this.gameState = this.gameState.checkedCreateStateFromMove(move);
             }

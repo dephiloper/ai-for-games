@@ -354,7 +354,7 @@ public class GameState {
                 }
 
                 // if we jump over an enemy into freedom
-                if (nextNextPosition == 0) {
+                if ((nextNextPosition == 0) && ((nextPosition & enemyConfiguration) != 0)) {
                     break;
                 }
 
