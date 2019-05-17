@@ -198,9 +198,6 @@ public class GameState {
     public float getRateByTokenMovable(int playerNumber) {
         long possibleMoves = getNextPossibleMoves(playerNumber);
         int numTokensMovable = Configurations.getNumTokens(possibleMoves);
-        if (numTokensMovable == 0) {
-            return -500.f;
-        }
         return (float)numTokensMovable;
     }
 
@@ -500,7 +497,7 @@ public class GameState {
         return false;
     }
 
-    public static GameState fromString(String s) {
+    public static GameState fromString(String s, int[] tokensToPlay) {
         GameState state = GameState.newEmptyGameState();
 
         int index = 0;
@@ -522,10 +519,11 @@ public class GameState {
 
         for (int playerNumber = 0; playerNumber < 4; playerNumber++) {
             long conf = state.configurations[playerNumber];
-            state.configurations[playerNumber] = Configurations.setNumTokensToPlay(
-                    conf,
-                    Configurations.NUM_TOKENS - Configurations.getNumTokens(conf)
-            );
+            int t2p = Configurations.NUM_TOKENS - Configurations.getNumTokens(conf);
+            if (playerNumber < tokensToPlay.length) {
+                t2p = tokensToPlay[playerNumber];
+            }
+            state.configurations[playerNumber] = Configurations.setNumTokensToPlay(conf, t2p);
         }
 
         return state;

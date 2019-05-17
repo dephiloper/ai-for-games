@@ -19,7 +19,8 @@ class Test {
                 "~~~~~~~" +
                 "~~~~~~~" +
                 "~~~~~~~" +
-                "~~~~~~~"
+                "~~~~~~~",
+                new int[] {0, 0, 0, 0}
         );
 
         analyseRateFunctions(state, 1, null);
