@@ -160,7 +160,7 @@ public class GameState {
         int playerDirection = PLAYER_DIRECTIONS[playerNumber];
         int sum = 0;
 
-        for (int i = 0; i < 7; i++) {
+        for (int i = 1; i < 8; i++) {
             sum += i * Configurations.getNumTokens(configuration & mask);
             if (playerDirection < 0) {
                 mask >>= -playerDirection;
@@ -461,6 +461,58 @@ public class GameState {
         return (nextNextPosition & generalConfiguration) == 0;
     }
 
+    static private boolean applyChar(GameState state, long pos, char c) {
+        switch (c) {
+            case '~':
+                return true;
+            case '0':
+                state.configurations[0] = state.configurations[0] | pos;
+                return true;
+            case '1':
+                state.configurations[1] = state.configurations[1] | pos;
+                return true;
+            case '2':
+                state.configurations[2] = state.configurations[2] | pos;
+                return true;
+            case '3':
+                state.configurations[3] = state.configurations[3] | pos;
+                return true;
+        }
+        return false;
+    }
+
+    public static GameState fromString(String s) {
+        GameState state = GameState.newEmptyGameState();
+
+        int index = 0;
+
+
+        int y = 6;
+        while ((y >= 0) && (s.length() != index)) {
+
+            int x = 0;
+            while ((x < 7) && (s.length() != index)) {
+                long pos = 1L << (x + y*7);
+                if (applyChar(state, pos, s.charAt(index))) {
+                    x++;
+                }
+                index++;
+            }
+            y--;
+        }
+
+        for (int playerNumber = 0; playerNumber < 4; playerNumber++) {
+            long conf = state.configurations[playerNumber];
+            state.configurations[playerNumber] = Configurations.setNumTokensToPlay(
+                    conf,
+                    Configurations.NUM_TOKENS - Configurations.getNumTokens(conf)
+            );
+        }
+
+        return state;
+    }
+
+    @Override
     public String toString() {
         StringBuilder result = new StringBuilder(51);
         final long generalConfiguration = getGeneralConfiguration();

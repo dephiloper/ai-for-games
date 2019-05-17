@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 public class Configurations {
     public static final int FIELD_SIZE = 7;
-    private static final int NUM_TOKENS = 7;
+    public static final int NUM_TOKENS = 7;
     static final int NUM_FIELDS = 49;
     static final long FIELD_BITMASK =            0b0000000000000001111111111111111111111111111111111111111111111111L;
     static final long TOKENS_TO_PLAY_BITMASK =   0b0000000000001110000000000000000000000000000000000000000000000000L;
@@ -111,6 +111,7 @@ public class Configurations {
      * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm.
      */
     static public int getNumTokens(long configuration) {
+        configuration = configuration & FIELD_BITMASK;
         int count = 0;
         while (configuration != 0) {
             configuration &= (configuration - 1);
@@ -124,8 +125,9 @@ public class Configurations {
     }
 
     public static int getNumTokensFinished(long configuration) {
-        long numTokensToPlay = configuration & TOKENS_TO_PLAY_BITMASK;
-        return (int)(NUM_TOKENS - (numTokensToPlay >> NUM_FIELDS));
+        long numTokensInGame = (configuration & TOKENS_TO_PLAY_BITMASK) >> NUM_FIELDS;
+        numTokensInGame += getNumTokens(configuration);
+        return (int)(NUM_TOKENS - numTokensInGame);
     }
 
     static int getNumTokensToPlay(long configuration) {
