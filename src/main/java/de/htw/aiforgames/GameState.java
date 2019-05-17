@@ -55,7 +55,7 @@ public class GameState {
     /**
      * An array of configurations defining the positions of the tokens
      */
-    private long[] configurations;
+    public long[] configurations;
     /**
      * The number of the player, who should do the next move.
      */
@@ -129,7 +129,7 @@ public class GameState {
         return Math.abs(getRate(configurations[currentPlayer], currentPlayer));
     }
 
-    private float getRate(long configuration, int playerNumber) {
+    public float getRate(long configuration, int playerNumber) {
         return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
                tokenFinishedWeight * getRateByTokenFinished(configuration) +
                tokenToMoveWeight * getRateByTokenMovable(playerNumber);
@@ -172,11 +172,11 @@ public class GameState {
         return sum;
     }
 
-    private static float getRateByTokenFinished(long configuration) {
+    public static float getRateByTokenFinished(long configuration) {
         return Configurations.getNumTokensFinished(configuration);
     }
 
-    private float getRateByTokenMovable(int playerNumber) {
+    public float getRateByTokenMovable(int playerNumber) {
         long possibleMoves = getNextPossibleMoves(playerNumber);
         int numTokensMovable = Configurations.getNumTokens(possibleMoves);
         if (numTokensMovable == 0) {
