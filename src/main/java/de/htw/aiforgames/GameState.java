@@ -19,11 +19,12 @@ public class GameState {
     public static final int NUM_PLAYERS = 4;
     private static final int MAX_NEXT_MOVES = 13;
     public static final long INVALID_MOVE = 0L;
-    private static final float EPSILON = 0.00001f;
 
     private static final float tokenPositionsWeight = 1.f;
-    private static final float tokenFinishedWeight = 16.f;
+    private static final float tokenFinishedWeight = 8.f;
     private static final float tokenToMoveWeight = 0.5f;
+    private static final float winWeight = 100.f;
+    private static final float inactiveWeight = -100.f;
 
     final static private int[] PLAYER_DIRECTIONS = new int[] {
             Configurations.FIELD_SIZE,
@@ -112,27 +113,45 @@ public class GameState {
      * @return The score of the configurations
      */
     public float calculateScore(int playerNumber) {
-        /*
-        float enemyScore = 0.f;
-        float playerScore = 0.f;
+        float enemyRate = 0.f;
+        float playerRate = 0.f;
         for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
             float rate = getRate(configurations[playerIndex], playerIndex);
             if (playerIndex == playerNumber) {
-                playerScore = rate;
+                playerRate = rate;
             } else {
-                enemyScore += rate;
+                if (enemyRate < rate) {
+                    enemyRate = rate;
+                }
             }
         }
-        return Math.abs(playerScore) / (Math.abs(enemyScore) + EPSILON);
-         */
+        return playerRate - enemyRate;
+    }
 
-        return Math.abs(getRate(configurations[currentPlayer], currentPlayer));
+    public float getRate(int playerNumber) {
+        return getRate(configurations[playerNumber], playerNumber);
     }
 
     public float getRate(long configuration, int playerNumber) {
         return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
                tokenFinishedWeight * getRateByTokenFinished(configuration) +
-               tokenToMoveWeight * getRateByTokenMovable(playerNumber);
+               tokenToMoveWeight * getRateByTokenMovable(playerNumber) +
+               winWeight * getRateByWon(configuration) +
+               inactiveWeight * getRateByInactive(configuration);
+    }
+
+    public static float getRateByInactive(long configuration) {
+        if (!Configurations.isPlayerActive(configuration)) {
+            return 1.f;
+        }
+        return 0.f;
+    }
+
+    public static float getRateByWon(long configuration) {
+        if ((configuration & Configurations.WON_BITMASK) == 0) {
+            return 1.f;
+        }
+        return 0.f;
     }
 
     /**

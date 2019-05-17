@@ -128,7 +128,14 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
             throw new IllegalStateException("Player number == -1");
         }
         selectedMove = GameState.INVALID_MOVE;
-        minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
+        float score = minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
+        System.out.println("our score: " + score);
+        System.out.println("our rate: " + state.getRate(playerNumber));
+        for (int playerIndex = 0; playerIndex < 4; playerIndex++) {
+            if (playerIndex != playerNumber) {
+                System.out.println("rate for player " + playerIndex + ": " + state.getRate(playerIndex));
+            }
+        }
 
         return selectedMove;
     }

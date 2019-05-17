@@ -13,16 +13,16 @@ class Test {
 
     static void testRateFunctions2() {
         GameState state = GameState.fromString(
-                "0~~~~~~" +
                 "~~~~~~~" +
                 "~~~~~~~" +
+                "~~~~~0~" +
                 "~~~~~~~" +
                 "~~~~~~~" +
                 "~~~~~~~" +
                 "~~~~~~~"
         );
 
-        analyseRateFunctions(state, 0, null);
+        analyseRateFunctions(state, 1, null);
     }
 
     static void testRateFunctions() {
@@ -57,7 +57,9 @@ class Test {
         System.out.println("rate by token positions: " + GameState.getRateByTokenPositions(configuration, playerNumber));
         System.out.println("rate by token positions 2: " + GameState.getRateByTokenPositions2(configuration, playerNumber));
         System.out.println("rate by token movable: " + gameState.getRateByTokenMovable(playerNumber));
-        System.out.println("rate by token token finished: " + GameState.getRateByTokenFinished(configuration));
+        System.out.println("rate by token finished: " + GameState.getRateByTokenFinished(configuration));
+        System.out.println("rate by win: " + GameState.getRateByWon(configuration));
+        System.out.println("rate by inactive: " + GameState.getRateByInactive(configuration));
 
         if (scanner != null) {
             scanner.next();
