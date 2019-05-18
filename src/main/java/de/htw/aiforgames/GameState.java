@@ -16,42 +16,6 @@ public class GameState {
      * The second player has the ground line (0, 0) to (0, 6).
      * The following players change clockwise.
      */
-    public static final int NUM_PLAYERS = 4;
-    private static final int MAX_NEXT_MOVES = 13;
-    public static final long INVALID_MOVE = 0L;
-
-    private static final float tokenPositionsWeight = 1.f;
-    private static final float tokenFinishedWeight = 8.f;
-    private static final float tokenToMoveWeight = 0.5f;
-    private static final float winWeight = 100.f;
-    private static final float inactiveWeight = -100.f;
-
-    final static private int[] PLAYER_DIRECTIONS = new int[] {
-            Configurations.FIELD_SIZE,
-            1,
-            -Configurations.FIELD_SIZE,
-            -1
-    };
-    final static private int[] BASELINE_POS = new int[] {0, 0, Configurations.FIELD_SIZE-1, Configurations.FIELD_SIZE-1};
-    final static private int[][] PLAYER_NUMBER_TO_XY_POSITIONS = new int[4][];
-
-    static {
-        int[] XPOSITIONS = new int[Configurations.NUM_FIELDS];
-        int[] YPOSITIONS = new int[Configurations.NUM_FIELDS];
-
-        for (int y = 0; y < Configurations.FIELD_SIZE; y++) {
-            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
-                int pos = x + y * Configurations.FIELD_SIZE;
-                XPOSITIONS[pos] = x;
-                YPOSITIONS[pos] = y;
-            }
-        }
-
-        PLAYER_NUMBER_TO_XY_POSITIONS[0] = YPOSITIONS;
-        PLAYER_NUMBER_TO_XY_POSITIONS[1] = XPOSITIONS;
-        PLAYER_NUMBER_TO_XY_POSITIONS[2] = YPOSITIONS;
-        PLAYER_NUMBER_TO_XY_POSITIONS[3] = XPOSITIONS;
-    }
 
     /**
      * An array of configurations defining the positions of the tokens
@@ -96,10 +60,10 @@ public class GameState {
 
     public static GameState newEmptyGameState() {
         return new GameState(new long[]{
-                Configurations.PLAYER_INIT_CONFIGURATION,
-                Configurations.PLAYER_INIT_CONFIGURATION,
-                Configurations.PLAYER_INIT_CONFIGURATION,
-                Configurations.PLAYER_INIT_CONFIGURATION,
+                Utils.PLAYER_INIT_CONFIGURATION,
+                Utils.PLAYER_INIT_CONFIGURATION,
+                Utils.PLAYER_INIT_CONFIGURATION,
+                Utils.PLAYER_INIT_CONFIGURATION,
         });
     }
 
@@ -107,112 +71,18 @@ public class GameState {
         return currentPlayer;
     }
 
-    /**
-     * Calculates the score of the configuration from the view of the player with playerNumber.
-     * @param playerNumber The number of the player from whose point of view the score is assessed.
-     * @return The score of the configurations
-     */
-    public float calculateScore(int playerNumber) {
-        float enemyRate = 0.f;
-        float playerRate = 0.f;
-        for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
-            float rate = getRate(configurations[playerIndex], playerIndex);
-            if (playerIndex == playerNumber) {
-                playerRate = rate;
-            } else {
-                if (enemyRate < rate) {
-                    enemyRate = rate;
-                }
-            }
-        }
-        return playerRate - enemyRate;
-    }
-
-    public float getRate(int playerNumber) {
-        return getRate(configurations[playerNumber], playerNumber);
-    }
-
-    public float getRate(long configuration, int playerNumber) {
-        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
-               tokenFinishedWeight * getRateByTokenFinished(configuration) +
-               tokenToMoveWeight * getRateByTokenMovable(playerNumber) +
-               winWeight * getRateByWon(configuration) +
-               inactiveWeight * getRateByInactive(configuration);
-    }
-
-    public static float getRateByInactive(long configuration) {
-        if (!Configurations.isPlayerActive(configuration)) {
-            return 1.f;
-        }
-        return 0.f;
-    }
-
-    public static float getRateByWon(long configuration) {
-        if ((configuration & Configurations.WON_BITMASK) == 0) {
-            return 1.f;
-        }
-        return 0.f;
-    }
-
-    /**
-     * Returns the Rating for the configuration by investigating only the progress of the tokens.
-     * @param configuration The configuration to rate
-     * @param playerNumber The Number of the player which controls the tokens in position.
-     * @return The score
-     */
-    public static float getRateByTokenPositions(long configuration, int playerNumber) {
-        int sum = 0;
-        final int base = BASELINE_POS[playerNumber];
-        int[] positions = PLAYER_NUMBER_TO_XY_POSITIONS[playerNumber];
-
-        for (long tokenPosition : new Configurations.TokenPositions(configuration)) {
-            int pos = Utils.floorLog2(tokenPosition);
-            int xyPos = positions[pos];
-            sum += Math.abs(xyPos - base) + 1;
-        }
-
-        return sum;
-    }
-
-    public static float getRateByTokenPositions2(long configuration, int playerNumber) {
-        long mask = Configurations.BASE_LINES[playerNumber];
-        int playerDirection = PLAYER_DIRECTIONS[playerNumber];
-        int sum = 0;
-
-        for (int i = 1; i < 8; i++) {
-            sum += i * Configurations.getNumTokens(configuration & mask);
-            if (playerDirection < 0) {
-                mask >>= -playerDirection;
-            } else {
-                mask <<= playerDirection;
-            }
-        }
-
-        return sum;
-    }
-
-    public static float getRateByTokenFinished(long configuration) {
-        return Configurations.getNumTokensFinished(configuration);
-    }
-
-    public float getRateByTokenMovable(int playerNumber) {
-        long possibleMoves = getNextPossibleMoves(playerNumber);
-        int numTokensMovable = Configurations.getNumTokens(possibleMoves);
-        return (float)numTokensMovable;
-    }
-
     private long getEnemyConfiguration() {
         long enemyConfiguration = 0L;
-        for (int playerIndex = 0; playerIndex < NUM_PLAYERS; playerIndex++) {
+        for (int playerIndex = 0; playerIndex < Utils.NUM_PLAYERS; playerIndex++) {
             if (playerIndex != currentPlayer) {
                 enemyConfiguration = enemyConfiguration | configurations[playerIndex];
             }
         }
-        return enemyConfiguration & Configurations.FIELD_BITMASK;
+        return enemyConfiguration & Utils.FIELD_BITMASK;
     }
 
     private long getPlayerConfiguration(int playerNumber) {
-        return configurations[playerNumber] & Configurations.FIELD_BITMASK;
+        return configurations[playerNumber] & Utils.FIELD_BITMASK;
     }
 
     private long getPlayerConfiguration() {
@@ -224,11 +94,11 @@ public class GameState {
         for (long configuration : configurations) {
             generalConfiguration |= configuration;
         }
-        return generalConfiguration & Configurations.FIELD_BITMASK;
+        return generalConfiguration & Utils.FIELD_BITMASK;
     }
 
     private static long getBaseLine(int playerNumber) {
-        return Configurations.BASE_LINES[playerNumber];
+        return Utils.BASE_LINES[playerNumber];
     }
 
     public long getNextPossibleMoves() {
@@ -259,12 +129,12 @@ public class GameState {
      * Returns the number of the next active player
      */
     private int getNextPlayerNumber() {
-        int nextPlayerNumber = (currentPlayer + 1) % NUM_PLAYERS;
+        int nextPlayerNumber = (currentPlayer + 1) % Utils.NUM_PLAYERS;
         for (int i = 0; i < 5; i++) {
             if (Configurations.isPlayerActive(configurations[nextPlayerNumber])) {
                 return nextPlayerNumber;
             }
-            nextPlayerNumber = (nextPlayerNumber + 1) % NUM_PLAYERS;
+            nextPlayerNumber = (nextPlayerNumber + 1) % Utils.NUM_PLAYERS;
         }
         throw new IllegalStateException("no players are active anymore");
     }
@@ -278,7 +148,7 @@ public class GameState {
         final long[] targetConfigurations = configurations.clone();
 
         // handle null move
-        if (move == INVALID_MOVE) {
+        if (move == Utils.INVALID_MOVE) {
             targetConfigurations[currentPlayer] = Configurations.setPlayerInactive(configurations[currentPlayer]);
         } else {
             long playerConfiguration = getPlayerConfiguration();
@@ -312,13 +182,13 @@ public class GameState {
      */
     public GameState checkedCreateStateFromMove(long move) {
         long possibleMoves = getNextPossibleMoves();
-        if (((move & possibleMoves) == 0) && (move != INVALID_MOVE) || Configurations.getNumTokens(move) > 1) {
+        if (((move & possibleMoves) == 0) && (move != Utils.INVALID_MOVE) || Configurations.getNumTokens(move) > 1) {
             System.err.println(String.format(
                     "invalid move given: \n%s in state: \n%s",
                     Configurations.configurationToString(move, currentPlayer),
                     this)
             );
-            move = INVALID_MOVE;
+            move = Utils.INVALID_MOVE;
         }
         return createStateFromMove(move);
     }
@@ -326,9 +196,9 @@ public class GameState {
     private List<GameState> getNextPossibleStates() {
         final long nextPossibleMoves = getNextPossibleMoves();
 
-        final List<GameState> nextPossibleStates = new ArrayList<>(MAX_NEXT_MOVES);
+        final List<GameState> nextPossibleStates = new ArrayList<>(Utils.MAX_NEXT_MOVES);
         if (nextPossibleMoves == 0) {
-            nextPossibleStates.add(createStateFromMove(INVALID_MOVE));
+            nextPossibleStates.add(createStateFromMove(Utils.INVALID_MOVE));
         } else {
             for (long move : new Configurations.TokenPositions(nextPossibleMoves)) {
                 nextPossibleStates.add(createStateFromMove(move));
@@ -421,7 +291,7 @@ public class GameState {
 
     public boolean isGameOver() {
         boolean anyActive = false;
-        for (int playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
+        for (int playerNumber = 0; playerNumber < Utils.NUM_PLAYERS; playerNumber++) {
             if (Configurations.isPlayerActive(configurations[playerNumber])) {
                 anyActive = true;
             }
@@ -429,7 +299,7 @@ public class GameState {
 
         if (!anyActive) return true;
 
-        for (int playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
+        for (int playerNumber = 0; playerNumber < Utils.NUM_PLAYERS; playerNumber++) {
             if (Configurations.isConfigurationFinished(configurations[playerNumber])) {
                 return true;
             }
@@ -439,17 +309,17 @@ public class GameState {
     }
 
     private static long nextPositionInDirection(long position, int playerNumber) {
-        int playerDirection = PLAYER_DIRECTIONS[playerNumber];
+        int playerDirection = Utils.PLAYER_DIRECTIONS[playerNumber];
 
         // If token is on enemy baseline, move out of the field
-        if ((position & Configurations.ENEMY_BASE_LINES[playerNumber]) != 0) {
+        if ((position & Utils.ENEMY_BASE_LINES[playerNumber]) != 0) {
             return 0L;
         }
 
         if (playerDirection < 0) {
-            return (position >> -playerDirection) & Configurations.FIELD_BITMASK;
+            return (position >> -playerDirection) & Utils.FIELD_BITMASK;
         } else {
-            return (position << playerDirection) & Configurations.FIELD_BITMASK;
+            return (position << playerDirection) & Utils.FIELD_BITMASK;
         }
     }
 
@@ -519,7 +389,7 @@ public class GameState {
 
         for (int playerNumber = 0; playerNumber < 4; playerNumber++) {
             long conf = state.configurations[playerNumber];
-            int t2p = Configurations.NUM_TOKENS - Configurations.getNumTokens(conf);
+            int t2p = Utils.NUM_TOKENS - Configurations.getNumTokens(conf);
             if (playerNumber < tokensToPlay.length) {
                 t2p = tokensToPlay[playerNumber];
             }
@@ -534,14 +404,14 @@ public class GameState {
         StringBuilder result = new StringBuilder(51);
         final long generalConfiguration = getGeneralConfiguration();
 
-        for (int y = Configurations.FIELD_SIZE-1; y >= 0; y--) {
-            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
-                final long position = (1L << (x + y * Configurations.FIELD_SIZE));
+        for (int y = Utils.FIELD_SIZE-1; y >= 0; y--) {
+            for (int x = 0; x < Utils.FIELD_SIZE; x++) {
+                final long position = (1L << (x + y * Utils.FIELD_SIZE));
                 if ((position & generalConfiguration) == 0) {
                     result.append('~');
                     continue;
                 }
-                for (int playerNumber = 0; playerNumber < NUM_PLAYERS; playerNumber++) {
+                for (int playerNumber = 0; playerNumber < Utils.NUM_PLAYERS; playerNumber++) {
                     if ((configurations[playerNumber] & position) != 0) {
                         result.append(playerNumberToChar(playerNumber));
                     }

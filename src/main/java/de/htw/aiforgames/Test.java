@@ -1,5 +1,7 @@
 package de.htw.aiforgames;
 
+import de.htw.aiforgames.algorithm.Rater;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -12,6 +14,8 @@ class Test {
     }
 
     static void testRateFunctions2() {
+        Rater rater = Rater.withDefaults();
+
         GameState state = GameState.fromString(
                 "~~~~~~~" +
                 "~~~~~~~" +
@@ -23,10 +27,11 @@ class Test {
                 new int[] {0, 0, 0, 0}
         );
 
-        analyseRateFunctions(state, 1, null);
+        analyseRateFunctions(state, 1, null, rater);
     }
 
     static void testRateFunctions() {
+        Rater rater = Rater.withDefaults();
         Scanner scanner = new Scanner(System.in);
         GameState state = GameState.newEmptyGameState();
         Random random = new Random(System.currentTimeMillis());
@@ -43,24 +48,24 @@ class Test {
             state = state.createStateFromMove(move);
             System.out.println(state);
 
-            for (int playerIndex = 0; playerIndex < GameState.NUM_PLAYERS; playerIndex++) {
-                analyseRateFunctions(state, playerIndex, scanner);
+            for (int playerIndex = 0; playerIndex < Utils.NUM_PLAYERS; playerIndex++) {
+                analyseRateFunctions(state, playerIndex, scanner, rater);
             }
         }
     }
 
-    static void analyseRateFunctions(GameState gameState, int playerNumber, Scanner scanner) {
+    static void analyseRateFunctions(GameState gameState, int playerNumber, Scanner scanner, Rater rater) {
         System.out.println("\n---------------\n");
         System.out.println("state:\n" + gameState);
         System.out.println("playerNumber: " + playerNumber);
         long configuration = gameState.configurations[playerNumber];
-        System.out.println("rate: " + gameState.getRate(configuration, playerNumber));
-        System.out.println("rate by token positions: " + GameState.getRateByTokenPositions(configuration, playerNumber));
-        System.out.println("rate by token positions 2: " + GameState.getRateByTokenPositions2(configuration, playerNumber));
-        System.out.println("rate by token movable: " + gameState.getRateByTokenMovable(playerNumber));
-        System.out.println("rate by token finished: " + GameState.getRateByTokenFinished(configuration));
-        System.out.println("rate by win: " + GameState.getRateByWon(configuration));
-        System.out.println("rate by inactive: " + GameState.getRateByInactive(configuration));
+        System.out.println("rate: " + rater.getRate(gameState, playerNumber));
+        System.out.println("rate by token positions: " + Rater.getRateByTokenPositions(configuration, playerNumber));
+        System.out.println("rate by token positions 2: " + Rater.getRateByTokenPositions2(configuration, playerNumber));
+        System.out.println("rate by token movable: " + rater.getRateByTokenMovable(gameState, playerNumber));
+        System.out.println("rate by token finished: " + Rater.getRateByTokenFinished(configuration));
+        System.out.println("rate by win: " + Rater.getRateByWon(configuration));
+        System.out.println("rate by inactive: " + Rater.getRateByInactive(configuration));
 
         if (scanner != null) {
             scanner.next();

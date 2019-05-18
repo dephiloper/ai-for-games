@@ -2,6 +2,7 @@ package de.htw.aiforgames.algorithm;
 
 import de.htw.aiforgames.Configurations;
 import de.htw.aiforgames.GameState;
+import de.htw.aiforgames.Utils;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -12,9 +13,15 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
     private int initialDepth;
     private int playerNumber = -1;
     private long selectedMove = 0L;
+    private Rater rater;
 
     public DecisionRuleAlgorithm(int initialDepth) {
+        this(initialDepth, Rater.withDefaults());
+    }
+
+    public DecisionRuleAlgorithm(int initialDepth, Rater rater) {
         this.initialDepth = initialDepth;
+        this.rater = rater;
     }
 
     @Override
@@ -40,7 +47,7 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
         var moves = state.getNextPossibleMoves();
 
         if (depth == 0 || state.isGameOver()) {
-            return state.calculateScore(playerNumber);
+            return rater.calculateScore(state, playerNumber);
         }
 
         var topScore = playerNumber == state.getCurrentPlayer() ? lowerBound : upperBound;
@@ -85,15 +92,13 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
 
         float predictedScore = 0.f;
 
-        // TODO: check player number == 1
-
         while (!state.isGameOver()) {
             if (state.getCurrentPlayer() == dra.playerNumber) {
                 System.out.println("-----------------------------");
                 System.out.println(String.format("player: %d", state.getCurrentPlayer()));
                 System.out.println("Last predicted score " + predictedScore);
-                for (int i = 0; i < GameState.NUM_PLAYERS; i++) {
-                    System.out.println("score for player " + i + ": " + state.calculateScore(i));
+                for (int i = 0; i < Utils.NUM_PLAYERS; i++) {
+                    System.out.println("score for player " + i + ": " + dra.rater.calculateScore(state, i));
                 }
                 predictedScore = dra.minmax(state, dra.initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
                 System.out.println(String.format("this is the move we take: %d", log2(dra.selectedMove)));
@@ -127,13 +132,13 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
         if (playerNumber == -1) {
             throw new IllegalStateException("Player number == -1");
         }
-        selectedMove = GameState.INVALID_MOVE;
+        selectedMove = Utils.INVALID_MOVE;
         float score = minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
         System.out.println("our score: " + score);
-        System.out.println("our rate: " + state.getRate(playerNumber));
+        System.out.println("our rate: " + rater.getRate(state, playerNumber));
         for (int playerIndex = 0; playerIndex < 4; playerIndex++) {
             if (playerIndex != playerNumber) {
-                System.out.println("rate for player " + playerIndex + ": " + state.getRate(playerIndex));
+                System.out.println("rate for player " + playerIndex + ": " + rater.getRate(state, playerIndex));
             }
         }
 

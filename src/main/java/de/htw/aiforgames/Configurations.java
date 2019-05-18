@@ -3,21 +3,6 @@ package de.htw.aiforgames;
 import java.util.Iterator;
 
 public class Configurations {
-    public static final int FIELD_SIZE = 7;
-    public static final int NUM_TOKENS = 7;
-    static final int NUM_FIELDS = 49;
-    static final long FIELD_BITMASK =            0b0000000000000001111111111111111111111111111111111111111111111111L;
-    static final long TOKENS_TO_PLAY_BITMASK =   0b0000000000001110000000000000000000000000000000000000000000000000L;
-    static final long WON_BITMASK = FIELD_BITMASK | TOKENS_TO_PLAY_BITMASK;
-    static final long[] BASE_LINES = new long[] {0b0000000000000000000000000000000000000000000000000000000001111111L,
-                                                 0b0000000000000000000001000000100000010000001000000100000010000001L,
-                                                 0b0000000000000001111111000000000000000000000000000000000000000000L,
-                                                 0b0000000000000001000000100000010000001000000100000010000001000000L
-    };
-    static final long[] ENEMY_BASE_LINES = new long[] {BASE_LINES[2], BASE_LINES[3], BASE_LINES[0], BASE_LINES[1]};
-    static final long PLAYER_ACTIVE_BITMASK =    0b0000000000010000000000000000000000000000000000000000000000000000L;
-    static final long PLAYER_INIT_CONFIGURATION = PLAYER_ACTIVE_BITMASK | TOKENS_TO_PLAY_BITMASK;
-
     static private class TokenIterator implements Iterator<Long> {
         private long configuration;
 
@@ -45,7 +30,7 @@ public class Configurations {
 
         private MoveIterator(long configuration) {
             this.configuration = configuration;
-            this.isInvalidMove = configuration == GameState.INVALID_MOVE;
+            this.isInvalidMove = configuration == Utils.INVALID_MOVE;
         }
 
         public boolean hasNext() {
@@ -61,7 +46,7 @@ public class Configurations {
         public Long next() {
             if (isInvalidMove) {
                 this.configuration = 1L;
-                return GameState.INVALID_MOVE;
+                return Utils.INVALID_MOVE;
             }
             long old_configuration = configuration;
             this.configuration = this.configuration & (this.configuration - 1);
@@ -73,7 +58,7 @@ public class Configurations {
         private long configuration;
 
         public TokenPositions(long configuration) {
-            this.configuration = configuration & Configurations.FIELD_BITMASK;
+            this.configuration = configuration & Utils.FIELD_BITMASK;
         }
         public Iterator<Long> iterator() {
             return new TokenIterator(this.configuration);
@@ -84,7 +69,7 @@ public class Configurations {
         private long configuration;
 
         public MovePositions(long configuration) {
-            this.configuration = configuration & Configurations.FIELD_BITMASK;
+            this.configuration = configuration & Utils.FIELD_BITMASK;
         }
         public Iterator<Long> iterator() {
             return new MoveIterator(this.configuration);
@@ -94,9 +79,9 @@ public class Configurations {
     static public String configurationToString(long configuration, int playerNumber) {
         StringBuilder result = new StringBuilder(51);
 
-        for (int y = Configurations.FIELD_SIZE-1; y >= 0; y--) {
-            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
-                final long position = (1L << (x + y * Configurations.FIELD_SIZE));
+        for (int y = Utils.FIELD_SIZE-1; y >= 0; y--) {
+            for (int x = 0; x < Utils.FIELD_SIZE; x++) {
+                final long position = (1L << (x + y * Utils.FIELD_SIZE));
                 if ((position & configuration) == 0) {
                     result.append('~');
                 } else {
@@ -112,7 +97,7 @@ public class Configurations {
      * See https://www.geeksforgeeks.org/count-set-bits-in-an-integer/ Brian Kernighan’s Algorithm.
      */
     static public int getNumTokens(long configuration) {
-        configuration = configuration & FIELD_BITMASK;
+        configuration = configuration & Utils.FIELD_BITMASK;
         int count = 0;
         while (configuration != 0) {
             configuration &= (configuration - 1);
@@ -122,42 +107,42 @@ public class Configurations {
     }
 
     public static boolean isConfigurationFinished(long configuration) {
-        return (getNumTokensToPlay(configuration) == 0) && ((configuration & FIELD_BITMASK) == 0);
+        return (getNumTokensToPlay(configuration) == 0) && ((configuration & Utils.FIELD_BITMASK) == 0);
     }
 
     public static int getNumTokensFinished(long configuration) {
-        long numTokensInGame = (configuration & TOKENS_TO_PLAY_BITMASK) >> NUM_FIELDS;
+        long numTokensInGame = (configuration & Utils.TOKENS_TO_PLAY_BITMASK) >> Utils.NUM_FIELDS;
         numTokensInGame += getNumTokens(configuration);
-        return (int)(NUM_TOKENS - numTokensInGame);
+        return (int)(Utils.NUM_TOKENS - numTokensInGame);
     }
 
     static int getNumTokensToPlay(long configuration) {
-        long numTokensToPlay = configuration & TOKENS_TO_PLAY_BITMASK;
-        return (int)(numTokensToPlay >> NUM_FIELDS);
+        long numTokensToPlay = configuration & Utils.TOKENS_TO_PLAY_BITMASK;
+        return (int)(numTokensToPlay >> Utils.NUM_FIELDS);
     }
 
     static long setNumTokensToPlay(long targetPlayerState, int numTokensToPlay) {
-        return (targetPlayerState & ~TOKENS_TO_PLAY_BITMASK) | (((long) numTokensToPlay) << NUM_FIELDS);
+        return (targetPlayerState & ~Utils.TOKENS_TO_PLAY_BITMASK) | (((long) numTokensToPlay) << Utils.NUM_FIELDS);
     }
 
-    static boolean isPlayerActive(long configuration) {
-        return (configuration & PLAYER_ACTIVE_BITMASK) != 0;
+    public static boolean isPlayerActive(long configuration) {
+        return (configuration & Utils.PLAYER_ACTIVE_BITMASK) != 0;
     }
 
     static long setPlayerInactive(long configuration) {
-        return configuration & ~PLAYER_ACTIVE_BITMASK;
+        return configuration & ~Utils.PLAYER_ACTIVE_BITMASK;
     }
 
     static long setPlayerActive(long configuration) {
-        return configuration | PLAYER_ACTIVE_BITMASK;
+        return configuration | Utils.PLAYER_ACTIVE_BITMASK;
     }
 
     @SuppressWarnings("unused")
     static String configurationToString(long configuration) {
         StringBuilder result = new StringBuilder(51);
-        for (int y = Configurations.FIELD_SIZE-1; y >= 0; y--) {
-            for (int x = 0; x < Configurations.FIELD_SIZE; x++) {
-                if ((configuration & (1L << (x + y* Configurations.FIELD_SIZE))) != 0) {
+        for (int y = Utils.FIELD_SIZE-1; y >= 0; y--) {
+            for (int x = 0; x < Utils.FIELD_SIZE; x++) {
+                if ((configuration & (1L << (x + y* Utils.FIELD_SIZE))) != 0) {
                     result.append('X');
                 } else {
                     result.append('~');

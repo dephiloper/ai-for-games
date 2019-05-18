@@ -51,14 +51,14 @@ public class Client {
             }
             if (serverMove == null) { // our turn
                 while (playerNumber != gameState.getCurrentPlayer()) {
-                    gameState = gameState.createStateFromMove(GameState.INVALID_MOVE);
+                    gameState = gameState.createStateFromMove(Utils.INVALID_MOVE);
                 }
                 var move = this.decisionAlgorithm.getNextMove(this.gameState);
                 serverMove = createServerMove(this.playerNumber, move);
                 this.networkClient.sendMove(serverMove);
             } else { // enemy turn
                 while (serverMove.player != gameState.getCurrentPlayer()) {
-                    gameState = gameState.createStateFromMove(GameState.INVALID_MOVE);
+                    gameState = gameState.createStateFromMove(Utils.INVALID_MOVE);
                 }
                 var move = createMove(serverMove);
                 this.gameState = this.gameState.checkedCreateStateFromMove(move);
@@ -67,13 +67,13 @@ public class Client {
     }
 
     private static long createMove(Move serverMove) {
-        return 1L << (serverMove.y * Configurations.FIELD_SIZE + serverMove.x);
+        return 1L << (serverMove.y * Utils.FIELD_SIZE + serverMove.x);
     }
 
     private static Move createServerMove(int playerNumber, long move) {
         var serverMove = Utils.floorLog2(move);
-        var x = serverMove % Configurations.FIELD_SIZE;
-        var y = serverMove / Configurations.FIELD_SIZE;
+        var x = serverMove % Utils.FIELD_SIZE;
+        var y = serverMove / Utils.FIELD_SIZE;
         return new Move(playerNumber, x, y);
     }
 }
