@@ -6,6 +6,8 @@ import de.htw.aiforgames.algorithm.HumanAlgorithm;
 import de.htw.aiforgames.algorithm.RandomAlgorithm;
 import lenz.htw.sawhian.Server;
 
+import java.util.Collections;
+
 public class Main {
 
     private static class ClientWrapper implements Runnable {
@@ -30,6 +32,7 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         //new Thread(() -> Server.runOnceAndReturnTheWinner(60)).start();
         //Thread.sleep(1000);
+
 
         ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot", new DecisionRuleAlgorithm(7));
         ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new HumanAlgorithm());
