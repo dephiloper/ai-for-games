@@ -2,6 +2,7 @@ package de.htw.aiforgames;
 
 import de.htw.aiforgames.algorithm.DecisionAlgorithm;
 import de.htw.aiforgames.algorithm.DecisionRuleAlgorithm;
+import de.htw.aiforgames.algorithm.HumanAlgorithm;
 import de.htw.aiforgames.algorithm.RandomAlgorithm;
 import lenz.htw.sawhian.Server;
 
@@ -27,11 +28,11 @@ public class Main {
 
     // TODO: make server address editable
     public static void main(String[] args) throws InterruptedException {
-        // new Thread(() -> Server.runOnceAndReturnTheWinner(10)).start();
-        // Thread.sleep(1000);
+        //new Thread(() -> Server.runOnceAndReturnTheWinner(60)).start();
+        //Thread.sleep(1000);
 
         ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot", new DecisionRuleAlgorithm(7));
-        ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new RandomAlgorithm());
+        ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new HumanAlgorithm());
         ClientWrapper randomClient1 = new ClientWrapper(null, "Team Random2", new RandomAlgorithm());
         ClientWrapper randomClient2 = new ClientWrapper(null, "Team Random3", new RandomAlgorithm());
 

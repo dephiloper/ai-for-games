@@ -66,7 +66,7 @@ public class Client {
         }
     }
 
-    private static long createMove(Move serverMove) {
+    public static long createMove(Move serverMove) {
         return 1L << (serverMove.y * Utils.FIELD_SIZE + serverMove.x);
     }
 
