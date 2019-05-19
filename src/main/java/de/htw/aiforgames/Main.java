@@ -30,10 +30,10 @@ public class Main {
         // new Thread(() -> Server.runOnceAndReturnTheWinner(10)).start();
         // Thread.sleep(1000);
 
-        ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot 9", new DecisionRuleAlgorithm(9));
-        ClientWrapper randomClient0 = new ClientWrapper(null, "Team Bot 8", new DecisionRuleAlgorithm(8));
-        ClientWrapper randomClient1 = new ClientWrapper(null, "Team Bot 7", new DecisionRuleAlgorithm(7));
-        ClientWrapper randomClient2 = new ClientWrapper(null, "Team Bot 6", new DecisionRuleAlgorithm(6));
+        ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot", new DecisionRuleAlgorithm(7));
+        ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new RandomAlgorithm());
+        ClientWrapper randomClient1 = new ClientWrapper(null, "Team Random2", new RandomAlgorithm());
+        ClientWrapper randomClient2 = new ClientWrapper(null, "Team Random3", new RandomAlgorithm());
 
         new Thread(decisionClient).start();
         new Thread(randomClient0).start();

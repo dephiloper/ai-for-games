@@ -134,10 +134,12 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
         }
         selectedMove = Utils.INVALID_MOVE;
         float score = minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
+        System.out.println("---------");
         System.out.println("our score: " + score);
-        System.out.println("our rate: " + rater.getRate(state, playerNumber));
         for (int playerIndex = 0; playerIndex < 4; playerIndex++) {
-            if (playerIndex != playerNumber) {
+            if (playerIndex == playerNumber) {
+                System.out.println("rate for player " + playerIndex + ": " + rater.getRate(state, playerIndex) + " <--");
+            } else {
                 System.out.println("rate for player " + playerIndex + ": " + rater.getRate(state, playerIndex));
             }
         }

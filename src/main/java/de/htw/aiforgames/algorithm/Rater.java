@@ -8,14 +8,27 @@ import static de.htw.aiforgames.Utils.BASELINE_POS;
 import static de.htw.aiforgames.Utils.PLAYER_NUMBER_TO_XY_POSITIONS;
 
 public class Rater {
-    private float tokenPositionsWeight = 1.f;
-    private float tokenFinishedWeight = 8.f;
-    private float tokenToMoveWeight = 0.5f;
-    private float winWeight = 100.f;
-    private float inactiveWeight = -100.f;
+    public static final float DEFAULT_TOKEN_POSITIONS_WEIGHT = 1.f;
+    public static final float DEFAULT_TOKEN_FINISHED_WEIGHT = 9.0f;
+    public static final float DEFAULT_TOKEN_TO_MOVE_WEIGHT = 0.5f;
+    public static final float DEFAULT_WIN_WEIGHT = 100.F;
+    public static final float DEFAULT_INACTIVE_WEIGHT = -100.f;
+
+    private float[] weights;
 
     public static Rater withDefaults() {
-        return new Rater();
+        float[] weights = new float[] {
+                DEFAULT_TOKEN_POSITIONS_WEIGHT,
+                DEFAULT_TOKEN_FINISHED_WEIGHT,
+                DEFAULT_TOKEN_TO_MOVE_WEIGHT,
+                DEFAULT_WIN_WEIGHT,
+                DEFAULT_INACTIVE_WEIGHT
+        };
+        return new Rater(weights);
+    }
+
+    private Rater(float[] weights) {
+        this.weights = weights;
     }
 
     /**
@@ -24,6 +37,7 @@ public class Rater {
      * @return The score of the configurations
      */
     public float calculateScore(GameState gameState, int playerNumber) {
+        float maxEnemyRate = 0.f;
         float enemyRate = 0.f;
         float playerRate = 0.f;
         for (int playerIndex = 0; playerIndex < Utils.NUM_PLAYERS; playerIndex++) {
@@ -31,22 +45,33 @@ public class Rater {
             if (playerIndex == playerNumber) {
                 playerRate = rate;
             } else {
-                if (enemyRate < rate) {
-                    enemyRate = rate;
+                enemyRate += rate;
+                if (maxEnemyRate < rate) {
+                    maxEnemyRate = rate;
                 }
             }
         }
-        return playerRate - enemyRate;
+        return playerRate - (maxEnemyRate + enemyRate) / 4.f;
     }
 
     public float getRate(GameState gameState, int playerNumber) {
         long configuration = gameState.configurations[playerNumber];
 
-        return tokenPositionsWeight * getRateByTokenPositions(configuration, playerNumber) +
-                tokenFinishedWeight * getRateByTokenFinished(configuration) +
-                tokenToMoveWeight * getRateByTokenMovable(gameState, playerNumber) +
-                winWeight * getRateByWon(configuration) +
-                inactiveWeight * getRateByInactive(configuration);
+        float[] attributes = new float[] {
+                getRateByTokenPositions(configuration, playerNumber),
+                getRateByTokenFinished(configuration),
+                getRateByTokenMovable(gameState, playerNumber),
+                getRateByWon(configuration),
+                getRateByInactive(configuration)
+        };
+
+        float rate = 0.f;
+
+        for (int i = 0; i < attributes.length; i++) {
+            rate += weights[i] * attributes[i];
+        }
+
+        return rate;
     }
 
     /**
