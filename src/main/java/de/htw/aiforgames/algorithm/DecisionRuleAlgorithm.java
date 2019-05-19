@@ -10,17 +10,23 @@ import java.util.Random;
 public class DecisionRuleAlgorithm implements DecisionAlgorithm {
     public static final int DEFAULT_DEPTH = 9;
 
-    private int initialDepth;
+    public int initialDepth;
     private int playerNumber = -1;
     private long selectedMove = 0L;
     private Rater rater;
+    public boolean silent;
 
     public DecisionRuleAlgorithm(int initialDepth) {
-        this(initialDepth, Rater.withDefaults());
+        this(initialDepth, Rater.withDefaults(), false);
     }
 
-    public DecisionRuleAlgorithm(int initialDepth, Rater rater) {
+    public DecisionRuleAlgorithm(int initialDepth, Rater rater, boolean silent) {
         this.initialDepth = initialDepth;
+        this.rater = rater;
+        this.silent = silent;
+    }
+
+    public void setRater(Rater rater) {
         this.rater = rater;
     }
 
@@ -62,7 +68,6 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
 
                     if (depth == initialDepth) {
                         selectedMove = move;
-                        // System.out.println(String.format("minmax move: %d", log2(selectedMove)));
                     }
 
                     if (topScore > upperBound)
@@ -134,16 +139,34 @@ public class DecisionRuleAlgorithm implements DecisionAlgorithm {
         }
         selectedMove = Utils.INVALID_MOVE;
         float score = minmax(state, initialDepth, -Float.MAX_VALUE, Float.MAX_VALUE);
-        System.out.println("---------");
-        System.out.println("our score: " + score);
-        for (int playerIndex = 0; playerIndex < 4; playerIndex++) {
-            if (playerIndex == playerNumber) {
-                System.out.println("rate for player " + playerIndex + ": " + rater.getRate(state, playerIndex) + " <--");
-            } else {
-                System.out.println("rate for player " + playerIndex + ": " + rater.getRate(state, playerIndex));
+        if (!silent) {
+            System.out.println("---------");
+            for (int playerIndex = 0; playerIndex < 4; playerIndex++) {
+                if (playerIndex == playerNumber) {
+                    System.out.println("rate for player " + playerIndex + ": " + rater.getRate(state, playerIndex) + " <-- score: " + score);
+                } else {
+                    System.out.println("rate for player " + playerIndex + ": " + rater.getRate(state, playerIndex));
+                }
             }
         }
 
         return selectedMove;
+    }
+
+    public Rater getRater() {
+        return rater;
+    }
+
+    @Override
+    public String toString() {
+        return "DecisionRuleAlgorithm{" +
+                "initialDepth=" + initialDepth +
+                ", rater=" + rater +
+                '}';
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

@@ -308,6 +308,28 @@ public class GameState {
         return false;
     }
 
+    public int getWinner() {
+        if (!isGameOver()) {
+            throw new IllegalStateException("Game is not over, so no winner is possible");
+        }
+        int tokensFinishedMax = -1;
+        int bestPlayer = -1;
+        boolean draw = false;
+        for (int playerIndex = 0; playerIndex < Utils.NUM_PLAYERS; playerIndex++) {
+            int tokensFinished = Configurations.getNumTokensFinished(configurations[playerIndex]);
+            if (tokensFinished > tokensFinishedMax) {
+                tokensFinishedMax = tokensFinished;
+                bestPlayer = playerIndex;
+                draw = false;
+            } else if (tokensFinished == tokensFinishedMax) {
+                draw = true;
+                bestPlayer = -1;
+            }
+        }
+
+        return bestPlayer;
+    }
+
     private static long nextPositionInDirection(long position, int playerNumber) {
         int playerDirection = Utils.PLAYER_DIRECTIONS[playerNumber];
 

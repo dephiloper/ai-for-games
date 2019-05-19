@@ -4,6 +4,8 @@ import de.htw.aiforgames.Configurations;
 import de.htw.aiforgames.GameState;
 import de.htw.aiforgames.Utils;
 
+import java.util.Random;
+
 import static de.htw.aiforgames.Utils.BASELINE_POS;
 import static de.htw.aiforgames.Utils.PLAYER_NUMBER_TO_XY_POSITIONS;
 
@@ -15,6 +17,7 @@ public class Rater {
     public static final float DEFAULT_INACTIVE_WEIGHT = -100.f;
 
     private float[] weights;
+    private Random random;
 
     public static Rater withDefaults() {
         float[] weights = new float[] {
@@ -27,8 +30,30 @@ public class Rater {
         return new Rater(weights);
     }
 
+    public static Rater withLearned() {
+        float[] weights = new float[] {
+                2.86727f,
+                17.01f,
+                1.31f,
+                138.5f,
+                -397.1f
+        };
+        return new Rater(weights);
+    }
+
+    public Rater mutate(float mutationRate) {
+        float[] new_weights = new float[weights.length];
+
+        for (int i = 0; i < weights.length; i++) {
+            new_weights[i] = weights[i] + ((float)random.nextGaussian() * mutationRate * weights[i]);
+        }
+
+        return new Rater(new_weights);
+    }
+
     private Rater(float[] weights) {
         this.weights = weights;
+        random = new Random(System.currentTimeMillis());
     }
 
     /**
@@ -134,5 +159,15 @@ public class Rater {
             return 1.f;
         }
         return 0.f;
+    }
+
+    @Override
+    public String toString() {
+        return "Rater:" +
+               "\n\ttoken positions weight: " + weights[0] +
+               "\n\ttoken finished weight: " + weights[1] +
+               "\n\ttoken to move weight: " + weights[2] +
+               "\n\twin weight: " + weights[3] +
+               "\n\tinactive weight: " + weights[4];
     }
 }

@@ -3,6 +3,7 @@ package de.htw.aiforgames;
 import de.htw.aiforgames.algorithm.DecisionAlgorithm;
 import de.htw.aiforgames.algorithm.DecisionRuleAlgorithm;
 import de.htw.aiforgames.algorithm.RandomAlgorithm;
+import de.htw.aiforgames.algorithm.Rater;
 import lenz.htw.sawhian.Server;
 
 public class Main {
@@ -30,7 +31,7 @@ public class Main {
         // new Thread(() -> Server.runOnceAndReturnTheWinner(10)).start();
         // Thread.sleep(1000);
 
-        ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot", new DecisionRuleAlgorithm(7));
+        ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot", new DecisionRuleAlgorithm(7, Rater.withLearned(), true));
         ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new RandomAlgorithm());
         ClientWrapper randomClient1 = new ClientWrapper(null, "Team Random2", new RandomAlgorithm());
         ClientWrapper randomClient2 = new ClientWrapper(null, "Team Random3", new RandomAlgorithm());
