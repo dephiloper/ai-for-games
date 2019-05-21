@@ -140,7 +140,7 @@ public class Train {
 
     static public ArrayList<AlgorithmWrapper> createGeneration(int size) {
         ArrayList<AlgorithmWrapper> generation = new ArrayList<>(size);
-        Rater defaultRater = Rater.withDefaults();
+        Rater defaultRater = Rater.withLearned3();
         for (int i = 0; i < size; i++) {
             AlgorithmWrapper wrapper = new AlgorithmWrapper(
                     new DecisionRuleAlgorithm(TRAIN_DEPTH, defaultRater.mutate(MUTATION_RATE), true),
