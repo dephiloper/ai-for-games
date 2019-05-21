@@ -8,6 +8,7 @@ import de.htw.aiforgames.algorithm.Rater;
 import lenz.htw.sawhian.Server;
 
 import java.util.Collections;
+import java.util.Random;
 
 public class Main {
 
@@ -33,18 +34,30 @@ public class Main {
         //new Thread(() -> Server.runOnceAndReturnTheWinner(60)).start();
         //Thread.sleep(1000);
 
-        ClientWrapper decisionClient = new ClientWrapper(
+        ClientWrapper client0 = new ClientWrapper(
                 null,
-                "Team Bot",
-                new DecisionRuleAlgorithm(7, Rater.withLearned2(), false)
+                "Bot Learned2",
+                new DecisionRuleAlgorithm(5, Rater.withLearned2(), false)
         );
-        ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new RandomAlgorithm());
-        ClientWrapper randomClient1 = new ClientWrapper(null, "Team Random2", new RandomAlgorithm());
-        ClientWrapper randomClient2 = new ClientWrapper(null, "Team Random3", new RandomAlgorithm());
+        ClientWrapper client1 = new ClientWrapper(
+                null,
+                "Bot Learned1",
+                new DecisionRuleAlgorithm(7, Rater.withLearned(), false)
+        );
+        ClientWrapper client2 = new ClientWrapper(
+                null,
+                "Bot Default",
+                new DecisionRuleAlgorithm(7, Rater.withDefaults(), false)
+        );
+        ClientWrapper client3 = new ClientWrapper(
+                null,
+                "Bot Random",
+                new RandomAlgorithm()
+        );
 
-        new Thread(decisionClient).start();
-        new Thread(randomClient0).start();
-        new Thread(randomClient1).start();
-        new Thread(randomClient2).start();
+        new Thread(client0).start();
+        new Thread(client1).start();
+        new Thread(client2).start();
+        new Thread(client3).start();
     }
 }
