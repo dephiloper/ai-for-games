@@ -28,26 +28,26 @@ public class Main {
 
         ClientWrapper client0 = new ClientWrapper(
                 null,
-                "Human",
-                new HumanAlgorithm()
-                // new DecisionRuleAlgorithm(7, Rater.withLearned3(), false)
+                "L4ERN 7",
+                // new HumanAlgorithm()
+                new DecisionRuleAlgorithm(7, Rater.withLearned4(), false)
         );
         ClientWrapper client1 = new ClientWrapper(
                 null,
-                "Bot Random1",
-                new DecisionRuleAlgorithm(7, Rater.withLearned4(), false)
+                "Bot default",
+                new DecisionRuleAlgorithm(7, Rater.withDefaults(), false)
                 // new RandomAlgorithm()
         );
         ClientWrapper client2 = new ClientWrapper(
                 null,
-                "Bot Learned4",
-                new DecisionRuleAlgorithm(7, Rater.withLearned4(), false)
+                "Bot default",
+                new DecisionRuleAlgorithm(7, Rater.withDefaults(), false)
         );
         ClientWrapper client3 = new ClientWrapper(
                 null,
-                "Bot Random2",
+                "Bot default",
                 // new RandomAlgorithm()
-                new DecisionRuleAlgorithm(7, Rater.withLearned4(), false)
+                new DecisionRuleAlgorithm(7, Rater.withDefaults(), false)
         );
 
         new Thread(client0).start();
