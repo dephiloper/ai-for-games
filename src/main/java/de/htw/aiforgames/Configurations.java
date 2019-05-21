@@ -137,6 +137,22 @@ public class Configurations {
         return configuration | Utils.PLAYER_ACTIVE_BITMASK;
     }
 
+    public static long nextPositionInDirection(long position, int playerNumber) {
+        int playerDirection = Utils.PLAYER_DIRECTIONS[playerNumber];
+
+        // If token is on enemy baseline, move out of the field
+        if ((position & Utils.ENEMY_BASE_LINES[playerNumber]) != 0) {
+            return 0L;
+        }
+
+        if (playerDirection < 0) {
+            return (position >> -playerDirection) & Utils.FIELD_BITMASK;
+        } else {
+            return (position << playerDirection) & Utils.FIELD_BITMASK;
+        }
+    }
+
+
     @SuppressWarnings("unused")
     static String configurationToString(long configuration) {
         StringBuilder result = new StringBuilder(51);

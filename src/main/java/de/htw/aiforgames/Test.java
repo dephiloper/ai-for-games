@@ -10,24 +10,33 @@ import java.util.Scanner;
 class Test {
     public static void main(String[] args) {
         // testRateFunctions();
-        testRateFunctions2();
+        // testRateFunctions2();
+
+        for (int i = 0; i < 100; i++) {
+            Utils.printProgress(i, 100);
+            try {
+                Thread.sleep(25);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     static void testRateFunctions2() {
         Rater rater = Rater.withDefaults();
 
         GameState state = GameState.fromString(
-                "~~~~~~~" +
-                "~~~~~~~" +
+                "~~~~~1~" +
+                "~~~~~1~" +
                 "~~~~~0~" +
                 "~~~~~~~" +
                 "~~~~~~~" +
                 "~~~~~~~" +
                 "~~~~~~~",
-                new int[] {0, 0, 0, 0}
+                new int[] {6, 5, 7, 7}
         );
 
-        analyseRateFunctions(state, 1, null, rater);
+        analyseRateFunctions(state, 0, null, rater);
     }
 
     static void testRateFunctions() {
@@ -66,6 +75,7 @@ class Test {
         System.out.println("rate by token finished: " + Rater.getRateByTokenFinished(configuration));
         System.out.println("rate by win: " + Rater.getRateByWon(configuration));
         System.out.println("rate by inactive: " + Rater.getRateByInactive(configuration));
+        System.out.println("rate by tokens blocked: " + Rater.getRateByTokensBlocked(gameState, playerNumber));
 
         if (scanner != null) {
             scanner.next();

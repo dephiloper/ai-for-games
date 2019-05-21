@@ -54,9 +54,10 @@ public class Train {
     }
 
     private static final int NUM_EPOCHS = 4;
-    static final float MUTATION_RATE = 0.5f;
-    static final int GENERATION_SIZE = 4*3;
-    static final int NUM_TRAININGS = GENERATION_SIZE*4;
+    private static final float MUTATION_RATE = 0.5f;
+    private static final int GENERATION_SIZE = 4*3;
+    private static final int NUM_TRAININGS = GENERATION_SIZE*4;
+    private static final int TRAIN_DEPTH = 6;
 
     private ArrayList<AlgorithmWrapper> generation;
 
@@ -103,24 +104,16 @@ public class Train {
     public void playEpoch() {
         for (AlgorithmWrapper w : generation) {
             if (w.numPlays != 0)
-                throw new IllegalArgumentException("hey");
+                throw new IllegalStateException("hey");
         }
+
+        Utils.printProgress(-1, NUM_TRAININGS);
         for (int i = 0; i < NUM_TRAININGS; i++) {
             playWithWrappers(chooseRandom());
-            System.out.println(String.format("Iteration %d", i));
-
-            ArrayList<Integer> numPlays = new ArrayList<>(GENERATION_SIZE);
-            for (AlgorithmWrapper w : generation) {
-                numPlays.add(w.numPlays);
-            }
-            System.out.println("numPlays after epoch: " + numPlays);
+            Utils.printProgress(i, NUM_TRAININGS);
         }
 
         generation.sort(Comparator.comparingDouble(algorithmWrapper -> (double)algorithmWrapper.getWinRate()));
-
-        for (int i = 0; i < generation.size(); i++) {
-            System.out.println(String.format("%d: %s", i, generation.get(i)));
-        }
     }
 
     public AlgorithmWrapper[] chooseRandom() {
@@ -138,13 +131,6 @@ public class Train {
             }
         }
 
-        ArrayList<Integer> selectedNumPlays = new ArrayList<>();
-        for (AlgorithmWrapper w :
-                selectedWrappers) {
-            selectedNumPlays.add(w.numPlays);
-        }
-        System.out.println("selected numPlays: " + selectedNumPlays);
-
         return selectedWrappers;
     }
 
@@ -153,7 +139,7 @@ public class Train {
         Rater defaultRater = Rater.withDefaults();
         for (int i = 0; i < size; i++) {
             AlgorithmWrapper wrapper = new AlgorithmWrapper(
-                    new DecisionRuleAlgorithm(5, defaultRater.mutate(MUTATION_RATE), true),
+                    new DecisionRuleAlgorithm(TRAIN_DEPTH, defaultRater.mutate(MUTATION_RATE), true),
                     i%Utils.NUM_PLAYERS
             );
             generation.add(wrapper);

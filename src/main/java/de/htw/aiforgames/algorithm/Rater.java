@@ -15,6 +15,7 @@ public class Rater {
     public static final float DEFAULT_TOKEN_TO_MOVE_WEIGHT = 0.5f;
     public static final float DEFAULT_WIN_WEIGHT = 100.F;
     public static final float DEFAULT_INACTIVE_WEIGHT = -100.f;
+    public static final float DEFAULT_TOKENS_BLOCKED_WEIGHT = -2.f;
 
     private float[] weights;
     private Random random;
@@ -25,7 +26,8 @@ public class Rater {
                 DEFAULT_TOKEN_FINISHED_WEIGHT,
                 DEFAULT_TOKEN_TO_MOVE_WEIGHT,
                 DEFAULT_WIN_WEIGHT,
-                DEFAULT_INACTIVE_WEIGHT
+                DEFAULT_INACTIVE_WEIGHT,
+                DEFAULT_TOKENS_BLOCKED_WEIGHT
         };
         return new Rater(weights);
     }
@@ -36,7 +38,8 @@ public class Rater {
                 17.01f,
                 1.31f,
                 138.5f,
-                -397.1f
+                -397.1f,
+                -2.f
         };
         return new Rater(weights);
     }
@@ -87,7 +90,8 @@ public class Rater {
                 getRateByTokenFinished(configuration),
                 getRateByTokenMovable(gameState, playerNumber),
                 getRateByWon(configuration),
-                getRateByInactive(configuration)
+                getRateByInactive(configuration),
+                getRateByTokensBlocked(gameState, playerNumber)
         };
 
         float rate = 0.f;
@@ -161,6 +165,47 @@ public class Rater {
         return 0.f;
     }
 
+    /**
+     * Returns the number of tokens of player with playerNumber, which cannot move to the end of the board.
+     * @param state The GameState to analyse
+     * @param playerNumber The playerNumber whose tokens should be analysed
+     * @return The number of tokens, that cannot move to the end of the board, if the situation of the enemy players
+     * does not change
+     */
+    public static float getRateByTokensBlocked(GameState state, int playerNumber) {
+        long playerConfiguration = state.configurations[playerNumber];
+        long enemyConfiguration = state.getEnemyConfiguration(playerNumber);
+
+        int numberTokens = 0;
+        for (long tokenPosition : new Configurations.TokenPositions(playerConfiguration)) {
+            if (!canMoveToEnd(playerConfiguration, enemyConfiguration, tokenPosition, playerNumber)) {
+                numberTokens++;
+            }
+        }
+
+        return (float)numberTokens;
+    }
+
+    private static boolean canMoveToEnd(long playerConfiguration, long enemyConfiguration, long tokenPosition, int playerNumber) {
+
+        long nextPosition = Configurations.nextPositionInDirection(tokenPosition, playerNumber);
+        while (nextPosition != 0) {
+            long nextNextPosition = Configurations.nextPositionInDirection(nextPosition, playerNumber);
+
+            if ((nextPosition & playerConfiguration) != 0) {
+                return false;
+            }
+
+            if (((nextNextPosition & enemyConfiguration) != 0) && ((nextPosition & enemyConfiguration) != 0)) {
+                return false;
+            }
+
+            nextPosition = Configurations.nextPositionInDirection(nextPosition, playerNumber);
+        }
+
+        return true;
+    }
+
     @Override
     public String toString() {
         return "Rater:" +
@@ -168,6 +213,7 @@ public class Rater {
                "\n\ttoken finished weight: " + weights[1] +
                "\n\ttoken to move weight: " + weights[2] +
                "\n\twin weight: " + weights[3] +
-               "\n\tinactive weight: " + weights[4];
+               "\n\tinactive weight: " + weights[4] +
+               "\n\ttokens blocked weight: " + weights[5];
     }
 }

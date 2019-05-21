@@ -29,15 +29,18 @@ public class Main {
         }
     }
 
-    // TODO: make server address editable
     public static void main(String[] args) throws InterruptedException {
         //new Thread(() -> Server.runOnceAndReturnTheWinner(60)).start();
         //Thread.sleep(1000);
 
-        ClientWrapper decisionClient = new ClientWrapper(null, "Team Bot", new DecisionRuleAlgorithm(7, Rater.withLearned(), true));
-        ClientWrapper randomClient0 = new ClientWrapper(null, "Team Human", new HumanAlgorithm());
-        ClientWrapper randomClient1 = new ClientWrapper(null, "Team Random1", new RandomAlgorithm());
-        ClientWrapper randomClient2 = new ClientWrapper(null, "Team Random2", new RandomAlgorithm());
+        ClientWrapper decisionClient = new ClientWrapper(
+                null,
+                "Team Bot",
+                new DecisionRuleAlgorithm(7, Rater.withLearned(), false)
+        );
+        ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new RandomAlgorithm());
+        ClientWrapper randomClient1 = new ClientWrapper(null, "Team Random2", new RandomAlgorithm());
+        ClientWrapper randomClient2 = new ClientWrapper(null, "Team Random3", new RandomAlgorithm());
 
         new Thread(decisionClient).start();
         new Thread(randomClient0).start();

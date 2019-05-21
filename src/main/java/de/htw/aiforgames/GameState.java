@@ -2,7 +2,6 @@ package de.htw.aiforgames;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class GameState {
     /*
@@ -25,28 +24,6 @@ public class GameState {
      * The number of the player, who should do the next move.
      */
     private int currentPlayer;
-
-    static void test() {
-        GameState state = GameState.newEmptyGameState();
-
-        test_state(state);
-    }
-
-    static void test_state(GameState state) {
-        Random randomGenerator = new Random();
-
-        for (int i = 0; i < 500; i++) {
-            List<GameState> states = state.getNextPossibleStates();
-            int index = randomGenerator.nextInt(states.size());
-            System.out.println(String.format("player %d moves:", state.getCurrentPlayer()));
-            state = states.get(index);
-            if (state.isGameOver()) {
-                System.out.println("Game over!");
-                break;
-            }
-            System.out.println(state.toString());
-        }
-    }
 
     private GameState(long[] configurations) {
         this.configurations = configurations;
@@ -71,10 +48,14 @@ public class GameState {
         return currentPlayer;
     }
 
-    private long getEnemyConfiguration() {
+    public long getEnemyConfiguration() {
+        return getEnemyConfiguration(currentPlayer);
+    }
+
+    public long getEnemyConfiguration(int playerNumber) {
         long enemyConfiguration = 0L;
         for (int playerIndex = 0; playerIndex < Utils.NUM_PLAYERS; playerIndex++) {
-            if (playerIndex != currentPlayer) {
+            if (playerIndex != playerNumber) {
                 enemyConfiguration = enemyConfiguration | configurations[playerIndex];
             }
         }
@@ -193,6 +174,7 @@ public class GameState {
         return createStateFromMove(move);
     }
 
+    @SuppressWarnings("unused")
     private List<GameState> getNextPossibleStates() {
         final long nextPossibleMoves = getNextPossibleMoves();
 
@@ -228,10 +210,10 @@ public class GameState {
         boolean jumping = false;
         long position = move;
         while (true) {
-            final long nextPosition = nextPositionInDirection(position, playerNumber);
+            final long nextPosition = Configurations.nextPositionInDirection(position, playerNumber);
 
             if (jumping) {
-                final long nextNextPosition = nextPositionInDirection(nextPosition, playerNumber);
+                final long nextNextPosition = Configurations.nextPositionInDirection(nextPosition, playerNumber);
 
                 // if we are one field behind edge
                 if (nextPosition == 0) {
@@ -275,7 +257,7 @@ public class GameState {
                 {
                     // we assume that the field behind the enemy player is free,
                     // because otherwise the move would be invalid
-                    position = nextPositionInDirection(nextPosition, playerNumber);
+                    position = Configurations.nextPositionInDirection(nextPosition, playerNumber);
                     jumping = true;
                 }
                 else // if there is no enemy in front of us
@@ -314,35 +296,17 @@ public class GameState {
         }
         int tokensFinishedMax = -1;
         int bestPlayer = -1;
-        boolean draw = false;
         for (int playerIndex = 0; playerIndex < Utils.NUM_PLAYERS; playerIndex++) {
             int tokensFinished = Configurations.getNumTokensFinished(configurations[playerIndex]);
             if (tokensFinished > tokensFinishedMax) {
                 tokensFinishedMax = tokensFinished;
                 bestPlayer = playerIndex;
-                draw = false;
             } else if (tokensFinished == tokensFinishedMax) {
-                draw = true;
                 bestPlayer = -1;
             }
         }
 
         return bestPlayer;
-    }
-
-    private static long nextPositionInDirection(long position, int playerNumber) {
-        int playerDirection = Utils.PLAYER_DIRECTIONS[playerNumber];
-
-        // If token is on enemy baseline, move out of the field
-        if ((position & Utils.ENEMY_BASE_LINES[playerNumber]) != 0) {
-            return 0L;
-        }
-
-        if (playerDirection < 0) {
-            return (position >> -playerDirection) & Utils.FIELD_BITMASK;
-        } else {
-            return (position << playerDirection) & Utils.FIELD_BITMASK;
-        }
     }
 
     private static boolean canTokenMove(
@@ -352,7 +316,7 @@ public class GameState {
             long generalConfiguration)
     {
         // if nextPosition is occupied by myself, return false
-        long nextPosition = nextPositionInDirection(tokenPosition, playerNumber);
+        long nextPosition = Configurations.nextPositionInDirection(tokenPosition, playerNumber);
         if ((nextPosition & playerConfiguration) != 0) {
             return false;
         }
@@ -364,7 +328,7 @@ public class GameState {
 
         // Return whether nextNextPosition is free
         // jumping out of field is possible (nextNextPosition == 0)
-        long nextNextPosition = nextPositionInDirection(nextPosition, playerNumber);
+        long nextNextPosition = Configurations.nextPositionInDirection(nextPosition, playerNumber);
 
         return (nextNextPosition & generalConfiguration) == 0;
     }

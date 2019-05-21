@@ -20,6 +20,8 @@ public class Utils {
     public static final int MAX_NEXT_MOVES = 13;
     public static final long INVALID_MOVE = 0L;
 
+    public static final int PROGRESS_BAR_SIZE = 100;
+
     final static public int[] PLAYER_DIRECTIONS = new int[] {
             FIELD_SIZE,
             1,
@@ -49,5 +51,35 @@ public class Utils {
 
     public static int floorLog2(long n){
         return 63 - Long.numberOfLeadingZeros(n);
+    }
+
+    public static void printProgress(int n, int max) {
+        n++;
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append('|');
+
+        float ratio = n / (float)max;
+
+        for (int i = 0; i < (int)(ratio*PROGRESS_BAR_SIZE); i++) {
+            sb.append('#');
+        }
+
+        for (int i = (int)(ratio*PROGRESS_BAR_SIZE); i < PROGRESS_BAR_SIZE; i++) {
+            sb.append('~');
+        }
+
+        sb.append("|[");
+        sb.append(n);
+        sb.append('/');
+        sb.append(max);
+        if (n == max) {
+            sb.append("]\n");
+        } else {
+            sb.append("]\r");
+        }
+
+        System.out.print(sb);
     }
 }
