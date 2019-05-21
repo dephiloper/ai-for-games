@@ -53,9 +53,9 @@ public class Train {
         }
     }
 
-    private static final int NUM_EPOCHS = 20;
-    private static final float MUTATION_RATE = 0.5f;
-    private static final int GENERATION_SIZE = 4*3;
+    private static final int NUM_EPOCHS = 30;
+    private static final float MUTATION_RATE = 0.1f;
+    private static final int GENERATION_SIZE = 4*4;
     private static final int NUM_TRAININGS = GENERATION_SIZE*4;
     private static final int TRAIN_DEPTH = 5;
 
@@ -72,11 +72,13 @@ public class Train {
 
     private void start() {
         for (int i = 0; i < NUM_EPOCHS-1; i++) {
+            System.out.println("Epoch " + (i+1) + "/" + NUM_EPOCHS);
             playEpoch();
             System.out.println(generation.get(generation.size()-1));
 
             nextGeneration();
         }
+        System.out.println("Epoch " + NUM_EPOCHS + "/" + NUM_EPOCHS);
         playEpoch();
 
         generation.sort(Comparator.comparingDouble(algorithmWrapper -> -algorithmWrapper.getWinRate()));
