@@ -36,7 +36,7 @@ public class Main {
         ClientWrapper decisionClient = new ClientWrapper(
                 null,
                 "Team Bot",
-                new DecisionRuleAlgorithm(7, Rater.withLearned(), false)
+                new DecisionRuleAlgorithm(7, Rater.withLearned2(), false)
         );
         ClientWrapper randomClient0 = new ClientWrapper(null, "Team Random1", new RandomAlgorithm());
         ClientWrapper randomClient1 = new ClientWrapper(null, "Team Random2", new RandomAlgorithm());

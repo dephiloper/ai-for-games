@@ -44,6 +44,18 @@ public class Rater {
         return new Rater(weights);
     }
 
+    public static Rater withLearned2() {
+        float[] weights = new float[]{
+                0.8974543f,
+                3.689436f,
+                -0.0011625995f,
+                13.61828f,
+                15.181057f,
+                -0.09701156f,
+        };
+        return new Rater(weights);
+    }
+
     public Rater mutate(float mutationRate) {
         float[] new_weights = new float[weights.length];
 
