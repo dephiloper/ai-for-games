@@ -36,8 +36,8 @@ public class Main {
 
         ClientWrapper client0 = new ClientWrapper(
                 null,
-                "Bot Learned2",
-                new DecisionRuleAlgorithm(5, Rater.withLearned2(), false)
+                "Bot Learned3",
+                new DecisionRuleAlgorithm(7, Rater.withLearned3(), false)
         );
         ClientWrapper client1 = new ClientWrapper(
                 null,
