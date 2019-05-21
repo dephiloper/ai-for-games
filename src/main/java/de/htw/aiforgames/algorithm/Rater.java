@@ -57,13 +57,25 @@ public class Rater {
     }
 
     public static Rater withLearned3() {
-        float[] weights = new float[]{
+        float[] weights = new float[] {
                 1.2640512f,
                 9.378895f,
                 0.3759334f,
                 59.52735f,
                 -74.60958f,
                 -1.5798669f,
+        };
+        return new Rater(weights);
+    }
+
+    public static Rater withLearned4() {
+        float[] weights = new float[] {
+                1.4882792f,
+                10.9182005f,
+                0.1538707f,
+                62.34859f,
+                -96.40064f,
+                -1.6985091f
         };
         return new Rater(weights);
     }
