@@ -32,7 +32,7 @@ public class Rater {
         return new Rater(weights);
     }
 
-    public static Rater withLearned() {
+    public static Rater withLearned1() {
         float[] weights = new float[] {
                 2.86727f,
                 17.01f,

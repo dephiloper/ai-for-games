@@ -2,6 +2,7 @@ package de.htw.aiforgames.algorithm;
 
 import de.htw.aiforgames.Client;
 import de.htw.aiforgames.GameState;
+import de.htw.aiforgames.Utils;
 import lenz.htw.sawhian.Move;
 
 import java.io.BufferedReader;
@@ -23,17 +24,44 @@ public class HumanAlgorithm implements DecisionAlgorithm {
 
         System.out.println(state);
 
-        System.out.print("Type your decision like x,y: ");
+        long possibleMoves = state.getNextPossibleMoves();
 
-        try {
-            input = (reader.readLine()).split(",");
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (possibleMoves == 0L) {
+            return Client.createMove(new Move(playerNumber, -1, -1));
         }
 
-        assert input != null;
-        int[] position = {Integer.parseInt(input[0]),Integer.parseInt(input[1])};
+        long move;
+        int x;
+        int y;
+        while (true) {
+            System.out.print("Type your decision like x,y: ");
 
-        return Client.createMove(new Move(playerNumber, position[0], position[1]));
+            try {
+                input = (reader.readLine()).split(",");
+
+                x = Integer.parseInt(input[0]) - 1;
+                y = Integer.parseInt(input[1]) - 1;
+            } catch (Exception e) {
+                try {
+                    reader.reset();
+                } catch (IOException ignored) { }
+                System.out.println("Invalid input, try again!");
+                continue;
+            }
+
+            if ((x < 0) || (x > 6) || (y < 0) || (y > 6)) {
+                System.out.println("Invalid input, try again!");
+                continue;
+            }
+
+            move = 1L << (x + y*7);
+            if ((move & possibleMoves) != 0) {
+                break;
+            } else {
+                System.out.println("Invalid move!");
+            }
+        }
+
+        return Client.createMove(new Move(playerNumber, x, y));
     }
 }

@@ -1,14 +1,6 @@
 package de.htw.aiforgames;
 
-import de.htw.aiforgames.algorithm.DecisionAlgorithm;
-import de.htw.aiforgames.algorithm.DecisionRuleAlgorithm;
-import de.htw.aiforgames.algorithm.HumanAlgorithm;
-import de.htw.aiforgames.algorithm.RandomAlgorithm;
-import de.htw.aiforgames.algorithm.Rater;
-import lenz.htw.sawhian.Server;
-
-import java.util.Collections;
-import java.util.Random;
+import de.htw.aiforgames.algorithm.*;
 
 public class Main {
 
@@ -36,23 +28,26 @@ public class Main {
 
         ClientWrapper client0 = new ClientWrapper(
                 null,
-                "Bot Learned3",
-                new DecisionRuleAlgorithm(7, Rater.withLearned3(), false)
+                "Human",
+                new HumanAlgorithm()
+                // new DecisionRuleAlgorithm(7, Rater.withLearned3(), false)
         );
         ClientWrapper client1 = new ClientWrapper(
                 null,
-                "Bot Learned1",
-                new DecisionRuleAlgorithm(7, Rater.withLearned(), false)
+                "Bot Random1",
+                new DecisionRuleAlgorithm(7, Rater.withLearned4(), false)
+                // new RandomAlgorithm()
         );
         ClientWrapper client2 = new ClientWrapper(
                 null,
-                "Bot Default",
-                new DecisionRuleAlgorithm(7, Rater.withDefaults(), false)
+                "Bot Learned4",
+                new DecisionRuleAlgorithm(7, Rater.withLearned4(), false)
         );
         ClientWrapper client3 = new ClientWrapper(
                 null,
-                "Bot Random",
-                new RandomAlgorithm()
+                "Bot Random2",
+                // new RandomAlgorithm()
+                new DecisionRuleAlgorithm(7, Rater.withLearned4(), false)
         );
 
         new Thread(client0).start();
